@@ -5,6 +5,9 @@
 {% block content %}
 
 <h1>API KEY CREATED</h1>
-
+{% if key != 'KEY COULD NOT BE SAVED' %}
 <p>Your API Key: <strong>{{key}}</strong> has been saved and is ready to use!</p>
+{% else %}
+<p>{{key}}</p>
+{% endif %}
 {% endblock %}
