@@ -81,6 +81,10 @@ class Manufacturer(db.Model):
         }
 
     def scrape_phones(self):
+        '''
+        Scrapes (currently) the first 36 phones by the current manufacturer
+        instance from phonearena.com, and creates them as phone objects
+        '''
         response = requests.get(self.url)
         page = bsoup(response.text, 'html.parser')
         results = page.find(id='finder-results')
@@ -93,6 +97,13 @@ class Manufacturer(db.Model):
 
     @classmethod
     def get(cls, name: str = None, limit: int = 100):
+        '''
+        Gets the manufacturers with the given name and/or all up 
+        to the limit (defaults to 100) and returns them
+        '''
+        if limit > 100:
+            limit = 100
+
         manufs = None
         if name:
             manufs = cls.query.filter_by(name=name).limit(limit).all()
