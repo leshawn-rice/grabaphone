@@ -11,56 +11,21 @@ import os
 
 # API Key Generation
 #####################################################################
-
-def add_key(key):
-    '''
-    Tries to add the key to the db,
-    if the key already exists, show the 
-    error message to the user
-    '''
-    # Try to add the key to the db,
-    # if the key exists show error message to user
-    try:
-        new_key = APIKey(key=key)
-        db.session.add(new_key)
-        db.session.commit()
-        return new_key
-    # Get name of error
-    except:
-        return 'KEY COULD NOT BE SAVED'
-
-
-def create_key():
-    '''
-    Creates a unique, random 12-character
-    key, and returns it
-    '''
-    key_created = False
-    key = None
-    while not key_created:
-        # The result from os.urandom(x) when hexed is twice the length as the val passed in
-        random_key = os.urandom(6).hex()
-        if not APIKey.query.filter_by(key=random_key).first():
-            key_created = True
-            key = random_key
-    return key
-
-
 @app.route('/generate-api-key', methods=['GET', 'POST'])
 def generate_api_key():
     '''
     If the user sent a form (save key),
     save the api key in the db. Otherwise,
     show the user a unique, random 12-character
-    key, along a 'form' to save they key.
+    key, along with a form to save they key.
     '''
     if request.method == 'POST':
         key = request.form.get('key')
         if key:
-            added_key = add_key(key)
+            added_key = APIKey.create(key)
             return render_template('key_created.html', key=added_key)
     else:
-        key = create_key()
+        key = APIKey.generate()
         return render_template('generate_api_key.html', key=key)
 
 #####################################################################
@@ -69,18 +34,9 @@ def generate_api_key():
 #  User Routes  #
 #################
 
-
-def validate_api_key(data):
-    if 'key' not in data:
-        return False
-    request_key = data['key']
-    if not APIKey.query.filter_by(key=request_key):
-        return False
-    return True
-
-
 # Manufacturer Routes
 #####################################################################
+
 
 def get_manuf_by_name(name: str = None):
     '''
@@ -98,7 +54,7 @@ def get_manuf_by_name(name: str = None):
 
 def get_manuf_by_limit(limit: int = None):
     '''
-    Gets the first x manufacturer where x = limi,
+    Gets the first x manufacturer where x = limit,
     and returns a list of serialized dicts with the manufacturers' info
     '''
     # If limit is None or a type other than int
@@ -106,7 +62,7 @@ def get_manuf_by_limit(limit: int = None):
         try:
             limit = int(limit)
         except ValueError:
-            return ({'message': f'Invalid param limit: {limit}'}, 400)
+            return ({'message': f'Invalid limit: {limit}'}, 400)
         if limit > 100:
             limit = 100
         manufs = Manufacturer.query.limit(limit).all()
@@ -131,11 +87,12 @@ def get_first_100_manufs():
     return ({'manufacturers': []}, 200)
 
 
+# Name, limit, offset, rating **
 @app.route('/api/get-manufacturers', methods=['GET'])
 def get_manufacturers():
     '''Get manufacturers'''
     data = request.args
-    if not validate_api_key(data):
+    if not APIKey.validate(data):
         return (jsonify({'message': 'API Key validation failed!'}), 400)
     name = data.get('name')
     limit = data.get('limit')
@@ -181,7 +138,7 @@ def validate_master_key(data):
 @app.route('/api/add-manufacturers', methods=['POST'])
 def add_manufacturers():
     data = request.json
-    is_api_validated = validate_api_key(data)
+    is_api_validated = APIKey.validate(data)
     is_master_validated = validate_master_key(data)
     if not is_api_validated or not is_master_validated:
         return (jsonify({'message': 'Key Validation Failed!'}), 400)
@@ -217,7 +174,7 @@ def add_phones():
     if 'limit' in data:
         limit = data['limit']
 
-    if not validate_api_key(data) or not validate_master_key(data):
+    if not APIKey.validate(data) or not validate_master_key(data):
         return (jsonify({'message': 'Key Validation Failed!'}), 400)
 
     manufs = Manufacturer.query.offset(offset).limit(limit).all()

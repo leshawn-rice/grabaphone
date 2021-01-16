@@ -1,4 +1,5 @@
 import requests
+import os
 from bs4 import BeautifulSoup as bsoup
 from typing import Set
 from app.database import db
@@ -13,6 +14,41 @@ class APIKey(db.Model):
 
     def __repr__(self):
         return f'<APIKey #{self.id}: {self.key}>'
+
+    @classmethod
+    def validate(cls, data):
+        if 'key' not in data:
+            return False
+
+        key = data['key']
+        if not cls.query.filter_by(key=key).first():
+            return False
+        return True
+
+    @classmethod
+    def create(cls, key):
+        '''Creates a new API Key with value key'''
+        new_key = cls(key=key)
+        db.session.add(new_key)
+        db.session.commit(new_key)
+        return new_key
+
+    @classmethod
+    def generate(cls):
+    '''
+    Creates a unique, random 12-character
+    key, and returns it
+    '''
+    key_created = False
+    key = None
+    # It's possible to generate an already existing key, this loops until a unique key is created
+    while not key_created:
+        # The result from os.urandom(x) when hexed is twice the length as the val passed in
+        random_key = os.urandom(6).hex()
+        if not cls.query.filter_by(key=random_key).first():
+            key_created = True
+            key = random_key
+    return key
 
 
 class Manufacturer(db.Model):
