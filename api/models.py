@@ -80,7 +80,7 @@ class Manufacturer(db.Model):
             'phones': [p.serialize() for p in self.phones]
         }
 
-    def get_phones(self):
+    def scrape_phones(self):
         response = requests.get(self.url)
         page = bsoup(response.text, 'html.parser')
         results = page.find(id='finder-results')
@@ -100,7 +100,7 @@ class Manufacturer(db.Model):
         return new_manuf
 
     @classmethod
-    def get_all_manufacturer_info(cls):
+    def scrape_all_manufacturer_info(cls):
         '''
         Sends a GET request to phonearena.com/manufacturers
         and returns a list of all the names of the manufacturers
@@ -121,7 +121,7 @@ class Manufacturer(db.Model):
         Creates a new Manufacturer for every manufacturer
         on phonearena.com
         '''
-        manuf_info = cls.get_all_manufacturer_info()
+        manuf_info = cls.scrape_all_manufacturer_info()
         for manuf in manuf_info:
             name = manuf['name']
             url = manuf['url']
@@ -172,7 +172,7 @@ class Phone(db.Model):
             'specs': self.serialize_specs()
         }
 
-    def get_specs(self) -> Set['Spec']:
+    def scrape_specs(self) -> Set['Spec']:
         '''
 
         '''

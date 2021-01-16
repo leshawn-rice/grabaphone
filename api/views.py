@@ -180,9 +180,9 @@ def add_phones():
     manufs = Manufacturer.query.offset(offset).limit(limit).all()
 
     for manufacturer in manufs:
-        manufacturer.get_phones()
+        manufacturer.scrape_phones()
         for phone in manufacturer.phones:
-            phone.get_specs()
+            phone.scrape_specs()
     if Phone.query.all():
         return (jsonify({'message': 'Success'}), 200)
     else:
