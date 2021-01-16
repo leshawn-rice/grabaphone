@@ -92,6 +92,15 @@ class Manufacturer(db.Model):
                 name=name, url=url, manufacturer_id=self.id)
 
     @classmethod
+    def get(cls, name: str = None, limit: int = 100):
+        manufs = None
+        if name:
+            manufs = cls.query.filter_by(name=name).limit(limit).all()
+        else:
+            manufs = cls.query.limit(limit).all()
+        return manufs
+
+    @classmethod
     def create(cls, name: str, url: str) -> 'Manufacturer':
         '''Create a new manufacturer'''
         new_manuf = cls(name=name, url=url)
