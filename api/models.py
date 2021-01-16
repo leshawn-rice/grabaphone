@@ -65,6 +65,11 @@ class Manufacturer(db.Model):
         return f'<Manufacturer #{self.id}: {self.name}>'
 
     def serialize(self):
+        '''
+        Returns a dictionary with the manufacturer's
+        information, and a list of their phones, for converting
+        to JSON
+        '''
         return {
             'id': self.id,
             'name': self.name,
@@ -138,6 +143,10 @@ class Phone(db.Model):
         return f'<Phone #{self.id}: {self.manufacturer} {self.name}>'
 
     def serialize_specs(self):
+        '''
+        Returns a dictionary with the phone's spec
+        information, for converting to JSON
+        '''
         categories = {}
         for spec in self.specs:
             if spec.category not in categories:
@@ -149,6 +158,10 @@ class Phone(db.Model):
         return categories
 
     def serialize(self):
+        '''
+        Returns a dictionary with the phone's information, 
+        and a dict of their specs, for converting to JSON
+        '''
         return {
             'id': self.id,
             'name': self.name,
@@ -158,6 +171,9 @@ class Phone(db.Model):
         }
 
     def get_specs(self) -> Set['Spec']:
+        '''
+
+        '''
         response = requests.get(self.url)
         page = bsoup(response.text, 'html.parser')
         divs = page.find('div', class_='widgetSpecs').find_all('section')
