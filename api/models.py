@@ -14,6 +14,7 @@ class APIKey(db.Model):
     def __repr__(self):
         return f'<APIKey #{self.id}: {self.key}>'
 
+
 class Manufacturer(db.Model):
     '''Manufacturer Model'''
     __tablename__ = 'manufacturers'
@@ -27,6 +28,15 @@ class Manufacturer(db.Model):
     def __repr__(self):
         return f'<Manufacturer #{self.id}: {self.name}>'
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'url': self.url,
+
+            'phones': [p.serialize() for p in self.phones]
+        }
+
     def get_phones(self):
         response = requests.get(self.url)
         page = bsoup(response.text, 'html.parser')
@@ -35,7 +45,8 @@ class Manufacturer(db.Model):
         for phone in phones:
             name = phone.find('p', class_='title').text
             url = phone.a['href']
-            new_phone = Phone.create(name=name, url=url, manufacturer_id=self.id)
+            new_phone = Phone.create(
+                name=name, url=url, manufacturer_id=self.id)
 
     @classmethod
     def create(cls, name: str, url: str) -> 'Manufacturer':
@@ -44,7 +55,7 @@ class Manufacturer(db.Model):
         db.session.add(new_manuf)
         db.session.commit()
         return new_manuf
-    
+
     @classmethod
     def get_all_manufacturer_info(cls):
         '''
@@ -73,12 +84,14 @@ class Manufacturer(db.Model):
             url = manuf['url']
             cls.create(name=name, url=url)
 
+
 class Phone(db.Model):
     '''Phone Model'''
     __tablename__ = 'phones'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    manufacturer_id = db.Column(db.Integer, db.ForeignKey('manufacturers.id', ondelete='CASCADE'), nullable=False)
+    manufacturer_id = db.Column(db.Integer, db.ForeignKey(
+        'manufacturers.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.Text, nullable=False)
     url = db.Column(db.Text, nullable=False)
 
@@ -88,36 +101,59 @@ class Phone(db.Model):
     def __repr__(self):
         return f'<Phone #{self.id}: {self.manufacturer} {self.name}>'
 
+    def serialize_specs(self):
+        categories = {}
+        for spec in self.specs:
+            if spec.category not in categories:
+                categories[spec.category] = []
+
+        for spec in self.specs:
+            categories[spec.category].append(spec.serialize())
+
+        return categories
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'url': self.url,
+
+            'specs': self.serialize_specs()
+        }
+
     def get_specs(self) -> Set['Spec']:
         response = requests.get(self.url)
         page = bsoup(response.text, 'html.parser')
         divs = page.find('div', class_='widgetSpecs').find_all('section')
 
-        specs = {}
+        specs = set()
 
         for spec_group in divs:
             category = " ".join(str(spec_group.h3.text).split())
-            specs = spec_group.tbody.find_all('tr')
-            for spec in specs:
+            specs_ = spec_group.tbody.find_all('tr')
+            for spec in specs_:
                 name = " ".join(str(spec.th.text).split())
                 description = " ".join(str(spec.td.text).split())
-                new_spec = Spec.create(phone_id=self.id, category=category, name=name, description=description)
+                new_spec = Spec.create(
+                    phone_id=self.id, category=category, name=name, description=description)
                 specs.add(new_spec)
         return specs
 
     @classmethod
-    def create(cls, name: str, manufacturer_id: int) -> 'Phone':
-        new_phone = cls(manufacturer_id=manufacturer_id, name=name)
+    def create(cls, name: str, manufacturer_id: int, url: str) -> 'Phone':
+        new_phone = cls(manufacturer_id=manufacturer_id, name=name, url=url)
         db.session.add(new_phone)
         db.session.commit()
         return new_phone
+
 
 class Spec(db.Model):
     '''Specification Model'''
     __tablename__ = 'specs'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    phone_id = db.Column(db.Integer, db.ForeignKey('phones.id', ondelete='CASCADE'), nullable=False)
+    phone_id = db.Column(db.Integer, db.ForeignKey(
+        'phones.id', ondelete='CASCADE'), nullable=False)
     category = db.Column(db.Text, nullable=False)
     name = db.Column(db.Text, nullable=False)
     description = db.Column(db.Text, nullable=False)
@@ -127,9 +163,17 @@ class Spec(db.Model):
     def __repr__(self):
         return f'<Spec #{self.id}: {self.phone.name} - {self.name}: {self.description}>'
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description
+        }
+
     @classmethod
     def create(cls, phone_id: int, category: str, name: str, description: str) -> 'Spec':
-        new_spec = cls(phone_id=phone_id, category=category, name=name, description=description)
+        new_spec = cls(phone_id=phone_id, category=category,
+                       name=name, description=description)
         db.session.add(new_spec)
         db.session.commit()
         return new_spec
