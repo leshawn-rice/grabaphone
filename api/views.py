@@ -126,7 +126,8 @@ def get_phones():
 def validate_master_key(data):
     if 'master_key' not in data:
         return False
-    master_key = data['master_key']
+    master_key = data.get('master_key')
+    # Obvi change this in prod
     if master_key != 'masterkey':
         return False
     return True
@@ -138,10 +139,9 @@ def validate_master_key(data):
 @app.route('/api/add-manufacturers', methods=['POST'])
 def add_manufacturers():
     data = request.json
-    is_api_validated = APIKey.validate(data)
-    is_master_validated = validate_master_key(data)
-    if not is_api_validated or not is_master_validated:
+    if not APIKey.validate(data) or not validate_master_key(data):
         return (jsonify({'message': 'Key Validation Failed!'}), 400)
+
     Manufacturer.create_all()
     if Manufacturer.query.all():
         return (jsonify({'message': 'Success'}), 200)

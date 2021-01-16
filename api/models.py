@@ -16,17 +16,19 @@ class APIKey(db.Model):
         return f'<APIKey #{self.id}: {self.key}>'
 
     @classmethod
-    def validate(cls, data):
+    def validate(cls, data: dict):
+        # Need to see if this is redundant with the data.get(key)
         if 'key' not in data:
             return False
 
-        key = data['key']
+        key = data.get('key')
         if not cls.query.filter_by(key=key).first():
             return False
         return True
 
+    # Considering removing this altogether and just adding the key when user clicks generate
     @classmethod
-    def create(cls, key):
+    def create(cls, key: str):
         '''Creates a new API Key with value key'''
         new_key = cls(key=key)
         db.session.add(new_key)
