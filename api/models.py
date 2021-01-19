@@ -106,7 +106,7 @@ class Manufacturer(db.Model):
 
         return phones
 
-    @ classmethod
+    @classmethod
     def get(cls, name: str = None, limit: int = 100):
         '''
         Gets the manufacturers with the given name and/or all up
@@ -122,7 +122,7 @@ class Manufacturer(db.Model):
             manufs = cls.query.limit(limit).all()
         return manufs
 
-    @ classmethod
+    @classmethod
     def create(cls, name: str, url: str) -> 'Manufacturer':
         '''Create a new manufacturer'''
         new_manuf = cls(name=name, url=url)
@@ -130,7 +130,7 @@ class Manufacturer(db.Model):
         db.session.commit()
         return new_manuf
 
-    @ classmethod
+    @classmethod
     def scrape_all_manufacturer_info(cls):
         '''
         Sends a GET request to phonearena.com/manufacturers
@@ -146,7 +146,7 @@ class Manufacturer(db.Model):
             info.append({'name': manuf.span.text, 'url': manuf.a['href']})
         return info
 
-    @ classmethod
+    @classmethod
     def create_all(cls):
         '''
         Creates a new Manufacturer for every manufacturer
@@ -224,7 +224,7 @@ class Phone(db.Model):
                 specs.add(new_spec)
         return specs
 
-    @ classmethod
+    @classmethod
     def create(cls, name: str, manufacturer_id: int, url: str) -> 'Phone':
         new_phone = cls(manufacturer_id=manufacturer_id, name=name, url=url)
         db.session.add(new_phone)
@@ -255,7 +255,7 @@ class Spec(db.Model):
             'description': self.description
         }
 
-    @ classmethod
+    @classmethod
     def create(cls, phone_id: int, category: str, name: str, description: str) -> 'Spec':
         new_spec = cls(phone_id=phone_id, category=category,
                        name=name, description=description)
