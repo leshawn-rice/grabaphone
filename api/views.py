@@ -1,4 +1,5 @@
 from flask import render_template, request, jsonify
+from sqlalchemy import func
 from app.app import app
 from app.database import db
 from api.models import APIKey, Manufacturer, Phone
@@ -121,6 +122,25 @@ def delete_manufacturers():
 
 # Phone Routes
 #####################################################################
+
+@app.route('/api/get-phone-data', methods=['GET'])
+def get_raw_phone_data():
+    data = request.args
+    name = data.get('name')
+    if not APIKey.validate(data) or not validate_master_key(data):
+        return (jsonify({'message': 'Key Validation Failed!'}), 400)
+
+    manuf = Manufacturer.query.filter(func.lower(
+        Manufacturer.name) == name.lower()).first()
+
+    if not manuf:
+        return (jsonify({'message': 'Invalid Manufacturer Name'}), 400)
+
+    phones = {}
+    phones[manuf.name] = manuf.scrape_phones()
+
+    return (jsonify(phones), 200)
+
 
 @app.route('/api/add-phones', methods=['POST'])
 def add_phones():

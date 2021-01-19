@@ -17,10 +17,6 @@ class APIKey(db.Model):
 
     @classmethod
     def validate(cls, data: dict):
-        # Need to see if this is redundant with the data.get(key)
-        if 'key' not in data:
-            return False
-
         key = data.get('key')
         if not cls.query.filter_by(key=key).first():
             return False
@@ -37,20 +33,21 @@ class APIKey(db.Model):
 
     @classmethod
     def generate(cls):
-    '''
-    Creates a unique, random 12-character
-    key, and returns it
-    '''
-    key_created = False
-    key = None
-    # It's possible to generate an already existing key, this loops until a unique key is created
-    while not key_created:
-        # The result from os.urandom(x) when hexed is twice the length as the val passed in
-        random_key = os.urandom(6).hex()
-        if not cls.query.filter_by(key=random_key).first():
-            key_created = True
-            key = random_key
-    return key
+        '''
+        Creates a unique, random 12-character
+        key, and returns it
+        '''
+
+        key_created = False
+        key = None
+        # It's possible to generate an already existing key, this loops until a unique key is created
+        while not key_created:
+            # The result from os.urandom(x) when hexed is twice the length as the val passed in
+            random_key = os.urandom(6).hex()
+            if not cls.query.filter_by(key=random_key).first():
+                key_created = True
+                key = random_key
+        return key
 
 
 class Manufacturer(db.Model):
@@ -82,23 +79,37 @@ class Manufacturer(db.Model):
 
     def scrape_phones(self):
         '''
-        Scrapes (currently) the first 36 phones by the current manufacturer
-        instance from phonearena.com, and creates them as phone objects
+        Scrapes 5 pages of phones by the current manufacturer
+        instance from phonearena.com, and returns a list of
+        dicts with the phone name, url, and manuf id
         '''
-        response = requests.get(self.url)
-        page = bsoup(response.text, 'html.parser')
-        results = page.find(id='finder-results')
-        phones = results.find_all('div', class_='stream-item')
-        for phone in phones:
+        raw_phones = []
+        phones = []
+        url = self.url
+
+        # The first 5 pages is most recent 180 phones
+        for i in range(5):
+            response = requests.get(url)
+            if response.status_code != 200:
+                print(f'Page {i} not found!')
+                break
+            container = bsoup(response.text, 'html.parser').find(
+                id='finder-results')
+            current_phones = container.find_all('div', class_='stream-item')
+            raw_phones = list(set(raw_phones).union(current_phones))
+            url = self.url + f'/page/{i+1}'
+
+        for phone in raw_phones:
             name = phone.find('p', class_='title').text
             url = phone.a['href']
-            new_phone = Phone.create(
-                name=name, url=url, manufacturer_id=self.id)
+            phones.append({'name': name, 'url': url, 'manuf_id': self.id})
 
-    @classmethod
+        return phones
+
+    @ classmethod
     def get(cls, name: str = None, limit: int = 100):
         '''
-        Gets the manufacturers with the given name and/or all up 
+        Gets the manufacturers with the given name and/or all up
         to the limit (defaults to 100) and returns them
         '''
         if limit > 100:
@@ -111,7 +122,7 @@ class Manufacturer(db.Model):
             manufs = cls.query.limit(limit).all()
         return manufs
 
-    @classmethod
+    @ classmethod
     def create(cls, name: str, url: str) -> 'Manufacturer':
         '''Create a new manufacturer'''
         new_manuf = cls(name=name, url=url)
@@ -119,7 +130,7 @@ class Manufacturer(db.Model):
         db.session.commit()
         return new_manuf
 
-    @classmethod
+    @ classmethod
     def scrape_all_manufacturer_info(cls):
         '''
         Sends a GET request to phonearena.com/manufacturers
@@ -135,7 +146,7 @@ class Manufacturer(db.Model):
             info.append({'name': manuf.span.text, 'url': manuf.a['href']})
         return info
 
-    @classmethod
+    @ classmethod
     def create_all(cls):
         '''
         Creates a new Manufacturer for every manufacturer
@@ -181,7 +192,7 @@ class Phone(db.Model):
 
     def serialize(self):
         '''
-        Returns a dictionary with the phone's information, 
+        Returns a dictionary with the phone's information,
         and a dict of their specs, for converting to JSON
         '''
         return {
@@ -213,7 +224,7 @@ class Phone(db.Model):
                 specs.add(new_spec)
         return specs
 
-    @classmethod
+    @ classmethod
     def create(cls, name: str, manufacturer_id: int, url: str) -> 'Phone':
         new_phone = cls(manufacturer_id=manufacturer_id, name=name, url=url)
         db.session.add(new_phone)
@@ -244,7 +255,7 @@ class Spec(db.Model):
             'description': self.description
         }
 
-    @classmethod
+    @ classmethod
     def create(cls, phone_id: int, category: str, name: str, description: str) -> 'Spec':
         new_spec = cls(phone_id=phone_id, category=category,
                        name=name, description=description)
