@@ -142,29 +142,32 @@ def get_raw_phone_data():
     return (jsonify(phones), 200)
 
 
-@app.route('/api/add-phones', methods=['POST'])
+@app.route('/api/add-phone', methods=['POST'])
 def add_phones():
     data = request.json
-    limit = 1
-    offset = 0
-    if 'offset' in data:
-        offset = data['offset']
-    if 'limit' in data:
-        limit = data['limit']
+
+    name = data.get('name')
+    url = data.get('url')
+    manuf_id = data.get('manuf_id')
 
     if not APIKey.validate(data) or not validate_master_key(data):
         return (jsonify({'message': 'Key Validation Failed!'}), 400)
 
-    manufs = Manufacturer.query.offset(offset).limit(limit).all()
+    if not name or not url or not manuf_id:
+        return (jsonify({'message': 'Invalid Data!'}), 400)
 
-    for manufacturer in manufs:
-        manufacturer.scrape_phones()
-        for phone in manufacturer.phones:
-            phone.scrape_specs()
-    if Phone.query.all():
-        return (jsonify({'message': 'Success'}), 200)
+    try:
+        manuf_id = int(manuf_id)
+    except ValueError:
+        manuf_id = 99999
+
+    manuf = Manufacturer.query.get(manuf_id)
+
+    if manuf:
+        phone = Phone.create(name=name, manufacturer_id=manuf_id, url=url)
+        return (jsonify({'Phone': phone.serialize()}))
     else:
-        return (jsonify({'message': 'Error'}), 200)
+        return (jsonify({'message': 'Invalid Manufacturer ID!'}), 200)
 
 
 @app.route('/api/update-phones', methods=['PATCH'])
