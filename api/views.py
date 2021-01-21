@@ -53,7 +53,6 @@ def get_serialized_manufs(name: str = None, limit: str = '100') -> List['Manufac
     Takes in an optional name and limit, and returns a list of serialized
     manufacturers matching the name and/or limit.
     '''
-    # Convert str limit to an integer
     limit = int(limit)
     manufs = None
     # We need this if statement because if name is None and we filter by it we get 0 results
@@ -66,7 +65,7 @@ def get_serialized_manufs(name: str = None, limit: str = '100') -> List['Manufac
     return serialized_manufs
 
 
-# Name, limit, offset, rating **
+# Name, limit, offset, rating ** (Still need to come up with a pythonic way to rate the manufs)
 @app.route('/api/get-manufacturers', methods=['GET'])
 def get_manufacturers():
     '''Get manufacturers'''
@@ -92,6 +91,7 @@ def get_manufacturers():
 
 @app.route('/api/get-phones', methods=['GET'])
 def get_phones():
+    # Need to come up with a way to sort by battery, camera etc.
     pass
 
 #####################################################################
@@ -148,6 +148,7 @@ def convert_manuf_id(id: str = None):
     try:
         id = int(id)
     except TypeError:
+        # There are certainly under 90,000 phone manufacturers. This could also be changed to None or 0.
         id = 99999
     return id
 
@@ -190,7 +191,7 @@ def add_specs(phone_id):
 
 
 @app.route('/api/add-phone', methods=['POST'])
-def add_phones():
+def add_phone():
     data = request.json
 
     name = data.get('name')
