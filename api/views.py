@@ -3,6 +3,7 @@ from sqlalchemy import func
 from app.app import app
 from app.database import db
 from api.models import APIKey, Manufacturer, Phone
+from typing import List
 import os
 
 
@@ -20,14 +21,9 @@ def generate_api_key():
     show the user a unique, random 12-character
     key, along with a form to save they key.
     '''
-    if request.method == 'POST':
-        key = request.form.get('key')
-        if key:
-            added_key = APIKey.create(key)
-            return render_template('key_created.html', key=added_key)
-    else:
-        key = APIKey.generate()
-        return render_template('generate_api_key.html', key=key)
+    raw_key = APIKey.generate()
+    key_in_db = APIKey.create(raw_key)
+    return render_template('key_created.html', key=key_in_db)
 
 #####################################################################
 
@@ -39,12 +35,35 @@ def generate_api_key():
 #####################################################################
 
 
-def validate_limit(limit):
+def is_limit_convertable(limit: str = None):
+    '''
+    Takes a string value for limit,
+    checks if it can be converted to an integer,
+    and returns True/False based on that
+    '''
     try:
         limit = int(limit)
         return True
-    except ValueError:
+    except TypeError:
         return False
+
+
+def get_serialized_manufs(name: str = None, limit: str = '100') -> List['Manufacturer']:
+    '''
+    Takes in an optional name and limit, and returns a list of serialized
+    manufacturers matching the name and/or limit.
+    '''
+    # Convert str limit to an integer
+    limit = int(limit)
+    manufs = None
+    # We need this if statement because if name is None and we filter by it we get 0 results
+    if name:
+        manufs = Manufacturer.query.filter_by(name=name).limit(limit).all()
+    else:
+        manufs = Manufacturer.query.limit(limit).all()
+    # Put manufacturers in JSON format
+    serialized_manufs = [m.serialize() for m in manufs]
+    return serialized_manufs
 
 
 # Name, limit, offset, rating **
@@ -52,18 +71,18 @@ def validate_limit(limit):
 def get_manufacturers():
     '''Get manufacturers'''
     data = request.args
-    if not APIKey.validate(data):
-        return (jsonify({'message': 'API Key validation failed!'}), 400)
-
     name = data.get('name')
     limit = data.get('limit')
 
-    if not validate_limit(limit):
-        return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
+    if not APIKey.validate(data):
+        return (jsonify({'message': 'API Key validation failed!'}), 200)
+    if not limit:
+        limit = 100
+    if not is_limit_convertable(limit):
+        return (jsonify({'message': f'Limit {limit} invalid!'}), 200)
     else:
-        limit = int(limit)
-        manufs = Manufacturer.get(name=name, limit=limit)
-        return (jsonify({'Manufacturers': manufs}), 200)
+        serialized_manufs = get_serialized_manufs(name=name, limit=limit)
+        return (jsonify({'Manufacturers': serialized_manufs}), 200)
 
 #####################################################################
 
@@ -99,9 +118,11 @@ def validate_master_key(data):
 def add_manufacturers():
     data = request.json
     if not APIKey.validate(data) or not validate_master_key(data):
-        return (jsonify({'message': 'Key Validation Failed!'}), 400)
+        print('Key Issue!')
+        return (jsonify({'message': 'Key Validation Failed!'}), 200)
 
     Manufacturer.create_all()
+
     if Manufacturer.query.all():
         return (jsonify({'message': 'Success'}), 200)
     else:
@@ -123,6 +144,16 @@ def delete_manufacturers():
 # Phone Routes
 #####################################################################
 
+def convert_manuf_id(id: str = None):
+    try:
+        id = int(id)
+    except TypeError:
+        id = 99999
+    return id
+
+
+# To seed the db, get phone data for each manufacturer, then create phones
+
 @app.route('/api/get-phone-data', methods=['GET'])
 def get_raw_phone_data():
     data = request.args
@@ -142,6 +173,22 @@ def get_raw_phone_data():
     return (jsonify(phones), 200)
 
 
+@app.route('/api/add-specs/<int:phone_id>', methods=['POST'])
+def add_specs(phone_id):
+    data = request.json
+    if not APIKey.validate(data) or not validate_master_key(data):
+        return (jsonify({'message': 'Key Validation Failed!'}), 200)
+
+    phone = Phone.query.get(phone_id)
+
+    if not phone:
+        return (jsonify({'message': f'Phone ID {phone_id} invalid!'}), 200)
+
+    specs = phone.scrape_specs()
+
+    return (jsonify({'Phone': phone.serialize()}), 200)
+
+
 @app.route('/api/add-phone', methods=['POST'])
 def add_phones():
     data = request.json
@@ -151,16 +198,11 @@ def add_phones():
     manuf_id = data.get('manuf_id')
 
     if not APIKey.validate(data) or not validate_master_key(data):
-        return (jsonify({'message': 'Key Validation Failed!'}), 400)
-
+        return (jsonify({'message': 'Key Validation Failed!'}), 200)
     if not name or not url or not manuf_id:
-        return (jsonify({'message': 'Invalid Data!'}), 400)
+        return (jsonify({'message': 'Invalid Data!'}), 200)
 
-    try:
-        manuf_id = int(manuf_id)
-    except ValueError:
-        manuf_id = 99999
-
+    manuf_id = convert_manuf_id(manuf_id)
     manuf = Manufacturer.query.get(manuf_id)
 
     if manuf:

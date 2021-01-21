@@ -1,7 +1,7 @@
 import requests
 import os
 from bs4 import BeautifulSoup as bsoup
-from typing import Set
+from typing import List
 from app.database import db
 
 
@@ -28,7 +28,7 @@ class APIKey(db.Model):
         '''Creates a new API Key with value key'''
         new_key = cls(key=key)
         db.session.add(new_key)
-        db.session.commit(new_key)
+        db.session.commit()
         return new_key
 
     @classmethod
@@ -203,7 +203,7 @@ class Phone(db.Model):
             'specs': self.serialize_specs()
         }
 
-    def scrape_specs(self) -> Set['Spec']:
+    def scrape_specs(self) -> List['Spec']:
         '''
 
         '''
@@ -211,7 +211,7 @@ class Phone(db.Model):
         page = bsoup(response.text, 'html.parser')
         divs = page.find('div', class_='widgetSpecs').find_all('section')
 
-        specs = set()
+        specs = []
 
         for spec_group in divs:
             category = " ".join(str(spec_group.h3.text).split())
@@ -221,7 +221,7 @@ class Phone(db.Model):
                 description = " ".join(str(spec.td.text).split())
                 new_spec = Spec.create(
                     phone_id=self.id, category=category, name=name, description=description)
-                specs.add(new_spec)
+                specs.append(new_spec)
         return specs
 
     @classmethod
