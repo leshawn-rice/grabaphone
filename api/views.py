@@ -8,6 +8,14 @@ from functools import wraps
 import os
 
 
+# TODO
+# 1. Figure out how to respond with JSON even on 400 status codes (might be a JS issue not a python issue)
+# 2. Add get-phones route
+# 3. Add ability to update & delete manufs/phones
+# 4. Add UI
+# 5. Add tests
+# 6. Deploy
+
 #######################
 #  Custom Decorators  #
 #######################
@@ -121,7 +129,7 @@ def get_manufacturers():
 @app.route('/api/get-phones', methods=['GET'])
 @api_key_required
 def get_phones():
-    # Need to come up with a way to sort by battery, camera etc.
+    # Don't need to come up with a way to sort by battery, camera etc.
     pass
 
 #####################################################################
