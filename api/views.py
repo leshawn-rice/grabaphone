@@ -44,7 +44,7 @@ def is_limit_convertable(limit: str = None):
     try:
         limit = int(limit)
         return True
-    except TypeError:
+    except ValueError:
         return False
 
 
@@ -69,6 +69,7 @@ def get_serialized_manufs(name: str = None, limit: str = '100') -> List['Manufac
 @app.route('/api/get-manufacturers', methods=['GET'])
 def get_manufacturers():
     '''Get manufacturers'''
+    # Add offset
     data = request.args
     name = data.get('name')
     limit = data.get('limit')
