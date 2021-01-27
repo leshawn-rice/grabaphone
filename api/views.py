@@ -23,6 +23,7 @@ import os
 #####################################################################
 # Not sure if abort is the best way to go about sending the error back
 def api_key_required(f):
+    '''Decorator to validate API Key'''
     @wraps(f)
     def decorated_func(*args, **kwargs):
         data = request.args
@@ -35,6 +36,7 @@ def api_key_required(f):
 
 
 def master_key_required(f):
+    '''Decorator to validate master key (for updating db)'''
     @wraps(f)
     def decorated_func(*args, **kwargs):
         data = request.args
