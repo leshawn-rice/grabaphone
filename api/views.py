@@ -8,31 +8,11 @@ from functools import wraps
 import os
 
 
-####################
-#  No auth Routes  #
-####################
-
-# API Key Generation
-#####################################################################
-@app.route('/generate-api-key', methods=['GET', 'POST'])
-def generate_api_key():
-    '''
-    If the user sent a form (save key),
-    save the api key in the db. Otherwise,
-    show the user a unique, random 12-character
-    key, along with a form to save they key.
-    '''
-    raw_key = APIKey.generate()
-    key_in_db = APIKey.create(raw_key)
-    return render_template('key_created.html', key=key_in_db)
+#######################
+#  Custom Decorators  #
+#######################
 
 #####################################################################
-
-#################
-#  User Routes  #
-#################
-
-
 def api_key_required(f):
     @wraps(f)
     def decorated_func(*args, **kwargs):
@@ -52,6 +32,33 @@ def master_key_required(f):
         return f(*args, **kwargs)
     return decorated_func
 
+#####################################################################
+
+####################
+#  No auth Routes  #
+####################
+
+# API Key Generation
+#####################################################################
+
+
+@app.route('/generate-api-key', methods=['GET', 'POST'])
+def generate_api_key():
+    '''
+    If the user sent a form (save key),
+    save the api key in the db. Otherwise,
+    show the user a unique, random 12-character
+    key, along with a form to save they key.
+    '''
+    raw_key = APIKey.generate()
+    key_in_db = APIKey.create(raw_key)
+    return render_template('key_created.html', key=key_in_db)
+
+#####################################################################
+
+#################
+#  User Routes  #
+#################
 
 # Manufacturer Routes
 #####################################################################
