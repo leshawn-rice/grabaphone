@@ -14,7 +14,8 @@ import os
 # 3. Add ability to update & delete manufs/phones
 # 4. Add UI
 # 5. Add tests
-# 6. Deploy
+# 6. Document
+# 7. Deploy
 
 #######################
 #  Custom Decorators  #
