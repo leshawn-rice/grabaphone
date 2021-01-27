@@ -10,9 +10,8 @@ import json
 
 
 # TODO
-# 2. Add get-phones route
 # 3. Add ability to update & delete manufs/phones
-# 4. Add UI
+# 4. Add UI (almost done)
 # 5. Add tests
 # 6. Document
 # 7. Deploy
@@ -145,81 +144,53 @@ def get_manufacturers():
 # Phone Routes
 #####################################################################
 
-def sort_phones(sort):
-    # Get phones by release date
-    a = Spec.query.filter(Spec.category == 'Availability').order_by(
-        Spec.description.desc()).all()
-    # Get phones by price
-    b = Spec.query.filter(Spec.category.ilike(
-        'Buyers information'), Spec.name.ilike('Price:')).order_by(Spec.description.desc()).all()
+# Might add additional sorting options later
 
-    s = a + b
-
-    phones = []
-
-    for spec in s:
-        if spec.phone not in phones:
-            phones.append(spec.phone)
-
-    # This is if we only wanna return the phone name and the requested specs
-    # for spec in s:
-    #     phones[spec.phone.name] = {}
-
-    # for spec in s:
-    #     phones[spec.phone.name][spec.name] = spec.description
-
-    # print(phones)
-
-    return phones
-
-
-def sort_and_get_phones(manufacturer: str, name: str, limit: str, raw_sort: str):
-    all_phones = Phone.query.all()
-    sort = None
-    sorting_map = {
-        'release': ('oldest', 'newest'),
-        'price': ('highest', 'lowest'),
-        'rating': ('highest', 'lowest')
-    }
-
+def get_serialized_phones(manufacturer: str, name: str, limit: str):
+    '''
+    Gets {limit} phones with the given manufacturer, that match the given name,
+    serializes and then returns them
+    '''
+    limit = int(limit)
+    # If 'iPhone' is sent, we want Apple iPhone 12, 11... etc
+    phones = Phone.query.filter(Phone.name.ilike(
+        r"%{}%".format(name))).limit(limit).all()
     if manufacturer:
-        m = Manufacturer.query.filter(
-            Manufacturer.name.ilike(manufacturer)).first()
-        if m:
-            all_phones = m.phones
-
-    if raw_sort:
-        sort = json.loads(raw_sort)
-
-    phones = sort_phones(sort)
-
-    # This is basically what sort_phones() does but a bit different
-    # p = Phone.query.join(Spec, Phone.id == Spec.phone_id).add_columns(
-    #     Spec.name, Spec.description).filter(Spec.category == 'Availability').order_by(Spec.description.asc()).all()
-
-    # phones = [p[0].serialize() for p in p]
-
+        return [p.serialize() for p in phones if p.manufacturer.name.lower() == manufacturer.lower()]
     return [p.serialize() for p in phones]
+
+
+def is_manuf_name_valid(name):
+    '''
+    Checks if the given name matches the name
+    of any manufacturers in the DB
+    '''
+    manuf = Manufacturer.query.filter_by(name=name).first()
+    if manuf:
+        return True
+    return False
 
 
 @app.route('/api/get-phones', methods=['GET'])
 @api_key_required
 def get_phones():
-    # Don't need to come up with a way to sort by battery, camera etc.
+    '''
+    Get phones
+    '''
     data = request.args
     manufacturer = data.get('manufacturer')
     name = data.get('name')
     limit = data.get('limit')
-    sort = data.get('sort')
 
     if not limit:
         limit = 100
     if not is_limit_convertable(limit):
         return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
+    if not is_manuf_name_valid(name=manufacturer):
+        return (jsonify({'message': f'Manufacturer {manufacturer} invalid!'}), 400)
     else:
-        phones = sort_and_get_phones(
-            manufacturer=manufacturer, name=name, limit=limit, raw_sort=sort)
-        # return {'message': 'hey'}
+        phones = get_serialized_phones(
+            manufacturer=manufacturer, name=name, limit=limit)
         return (jsonify({'Phones': phones}), 200)
 
 #####################################################################
