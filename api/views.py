@@ -9,7 +9,6 @@ import os
 
 
 # TODO
-# 1. Figure out how to respond with JSON even on 400 status codes (might be a JS issue not a python issue)
 # 2. Add get-phones route
 # 3. Add ability to update & delete manufs/phones
 # 4. Add UI
@@ -156,9 +155,9 @@ def add_manufacturers():
     Manufacturer.create_all()
 
     if Manufacturer.query.all():
-        return (jsonify({'message': 'Success'}), 200)
+        return (jsonify({'Manufacturers': [m.serialize() for m in Manufacturer.query.all()]}), 200)
     else:
-        return (jsonify({'message': 'Error'}), 200)
+        return (jsonify({'message': 'Error adding manufacturers!'}), 400)
 
 
 @app.route('/api/update-manufacturers', methods=['PATCH'])
@@ -215,7 +214,7 @@ def add_specs(phone_id):
     phone = Phone.query.get(phone_id)
 
     if not phone:
-        return (jsonify({'message': f'Phone ID {phone_id} invalid!'}), 200)
+        return (jsonify({'message': f'Phone ID {phone_id} invalid!'}), 400)
 
     specs = phone.scrape_specs()
 
@@ -233,7 +232,7 @@ def add_phone():
     manuf_id = data.get('manuf_id')
 
     if not name or not url or not manuf_id:
-        return (jsonify({'message': 'Invalid Data!'}), 200)
+        return (jsonify({'message': 'Invalid Data!'}), 400)
 
     manuf_id = convert_manuf_id(manuf_id)
     manuf = Manufacturer.query.get(manuf_id)
