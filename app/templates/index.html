@@ -5,6 +5,30 @@
 {% block home_active %}active{% endblock %}
 
 {% block content %}
+
+<!-- Modals -->
+<div class="modal fade" id="get-manuf-example" tabindex="-1" aria-labelledby="get-manuf-example-label"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-center" id="get-manuf-example-label">Example of response from
+                    /api/get-manufacturers
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img src="/static/img/get-manuf-example.jpg" alt="Example of GET Manufacturers">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Modals -->
+
+
 <div class="row" id="content">
     <!-- Endpoints -->
     <div class="col-12 col-md-3 bg-light" id="endpoints">
@@ -24,9 +48,11 @@
                     <li>Limit (limit results to X manufacturers, with a max limit of 100)</li>
                 </ul>
                 <br>
-                <ul>Example Response
-                    <li><img src="NONE" alt="Example of GET Manufacturers"></li>
-                </ul>
+                <!-- Modal Trigger -->
+                <div class="text-center">
+                    <button class="btn btn-outline-light mb-1" data-bs-toggle="modal"
+                        data-bs-target="#get-manuf-example">Example Response</button>
+                </div>
             </div>
         </div>
 
@@ -51,11 +77,13 @@
             </div>
         </div>
     </div>
+    <!-- End Endpoints -->
 
     <!-- Example API Calls -->
     <div class="col-12 col-md-9" id="examples">
         <p class="lead text-dark text-center my-3">Content and example API calls</p>
         <div class="row ms-0">
+            <!-- Requests -->
             <div class="col-6 border border-dark">
                 <div class="text-center">
                     <p class="lead">Request!</p>
@@ -99,6 +127,8 @@
                     </div>
                 </div>
             </div>
+            <!-- End Requests -->
+            <!-- Responses -->
             <div class="col-6 border border-dark">
                 <div class="text-center">
                     <p class="lead">Response!</p>
@@ -114,6 +144,7 @@
                     </div>
                 </div>
             </div>
+            <!-- End Responses -->
         </div>
     </div>
 </div>
