@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify, abort
+from flask import render_template, request, jsonify, abort, make_response
 from sqlalchemy import func
 from app.app import app
 from app.database import db
@@ -22,12 +22,15 @@ import os
 #######################
 
 #####################################################################
+# Not sure if abort is the best way to go about sending the error back
 def api_key_required(f):
     @wraps(f)
     def decorated_func(*args, **kwargs):
         data = request.args
         if not APIKey.validate(data):
-            abort(401)
+            response = make_response(
+                jsonify({'message': 'API Key invalid!', 'status': 401}), 401)
+            abort(response)
         return f(*args, **kwargs)
     return decorated_func
 
@@ -37,7 +40,9 @@ def master_key_required(f):
     def decorated_func(*args, **kwargs):
         data = request.args
         if data.get('master_key') != 'masterkey':
-            abort(401)
+            response = make_response(
+                jsonify({'message': 'Master Key invalid!', 'status': 401}), 401)
+            abort(response)
         return f(*args, **kwargs)
     return decorated_func
 
@@ -116,7 +121,7 @@ def get_manufacturers():
     if not limit:
         limit = 100
     if not is_limit_convertable(limit):
-        return (jsonify({'message': f'Limit {limit} invalid!'}), 200)
+        return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
     else:
         serialized_manufs = get_serialized_manufs(name=name, limit=limit)
         return (jsonify({'Manufacturers': serialized_manufs}), 200)
