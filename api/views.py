@@ -43,6 +43,16 @@ def api_key_required(f):
     return decorated_func
 
 
+def master_key_required(f):
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        data = request.args
+        if data.get('master_key') != 'masterkey':
+            abort(401)
+        return f(*args, **kwargs)
+    return decorated_func
+
+
 # Manufacturer Routes
 #####################################################################
 
@@ -87,8 +97,6 @@ def get_manufacturers():
     name = data.get('name')
     limit = data.get('limit')
 
-    # if not APIKey.validate(data):
-    #     return (jsonify({'message': 'API Key validation failed!'}), 200)
     if not limit:
         limit = 100
     if not is_limit_convertable(limit):
@@ -104,6 +112,7 @@ def get_manufacturers():
 #####################################################################
 
 @app.route('/api/get-phones', methods=['GET'])
+@api_key_required
 def get_phones():
     # Need to come up with a way to sort by battery, camera etc.
     pass
@@ -114,27 +123,15 @@ def get_phones():
 #  Webmaster Routes  #
 ######################
 
-
-def validate_master_key(data):
-    if 'master_key' not in data:
-        return False
-    master_key = data.get('master_key')
-    # Obvi change this in prod
-    if master_key != 'masterkey':
-        return False
-    return True
-
 # Manufacturer Routes
 #####################################################################
 
 
 @app.route('/api/add-manufacturers', methods=['POST'])
+@api_key_required
+@master_key_required
 def add_manufacturers():
     data = request.json
-    if not APIKey.validate(data) or not validate_master_key(data):
-        print('Key Issue!')
-        return (jsonify({'message': 'Key Validation Failed!'}), 200)
-
     Manufacturer.create_all()
 
     if Manufacturer.query.all():
@@ -144,11 +141,15 @@ def add_manufacturers():
 
 
 @app.route('/api/update-manufacturers', methods=['PATCH'])
+@api_key_required
+@master_key_required
 def update_manufacturers():
     pass
 
 
 @app.route('/api/delete-manufacturers', methods=['DELETE'])
+@api_key_required
+@master_key_required
 def delete_manufacturers():
     pass
 
@@ -169,12 +170,11 @@ def convert_manuf_id(id: str = None):
 # To seed the db, get phone data for each manufacturer, then create phones
 
 @app.route('/api/get-phone-data', methods=['GET'])
+@api_key_required
+@master_key_required
 def get_raw_phone_data():
     data = request.args
     name = data.get('name')
-    if not APIKey.validate(data) or not validate_master_key(data):
-        return (jsonify({'message': 'Key Validation Failed!'}), 400)
-
     manuf = Manufacturer.query.filter(Manufacturer.name.ilike(name)).first()
 
     if not manuf:
@@ -187,11 +187,10 @@ def get_raw_phone_data():
 
 
 @app.route('/api/add-specs/<int:phone_id>', methods=['POST'])
+@api_key_required
+@master_key_required
 def add_specs(phone_id):
     data = request.json
-    if not APIKey.validate(data) or not validate_master_key(data):
-        return (jsonify({'message': 'Key Validation Failed!'}), 200)
-
     phone = Phone.query.get(phone_id)
 
     if not phone:
@@ -203,6 +202,8 @@ def add_specs(phone_id):
 
 
 @app.route('/api/add-phone', methods=['POST'])
+@api_key_required
+@master_key_required
 def add_phone():
     data = request.json
 
@@ -210,8 +211,6 @@ def add_phone():
     url = data.get('url')
     manuf_id = data.get('manuf_id')
 
-    if not APIKey.validate(data) or not validate_master_key(data):
-        return (jsonify({'message': 'Key Validation Failed!'}), 200)
     if not name or not url or not manuf_id:
         return (jsonify({'message': 'Invalid Data!'}), 200)
 
@@ -226,11 +225,15 @@ def add_phone():
 
 
 @app.route('/api/update-phones', methods=['PATCH'])
+@api_key_required
+@master_key_required
 def update_phones():
     pass
 
 
 @app.route('/api/delete-phones', methods=['DELETE'])
+@api_key_required
+@master_key_required
 def delete_phones():
     pass
 
