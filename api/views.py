@@ -148,8 +148,7 @@ def convert_manuf_id(id: str = None):
     try:
         id = int(id)
     except TypeError:
-        # There are certainly under 90,000 phone manufacturers. This could also be changed to None or 0.
-        id = 99999
+        id = None
     return id
 
 
