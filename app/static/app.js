@@ -1,6 +1,12 @@
 const masterKey = 'masterkey';
 const apiKey = '829c7dd80297'
 
+function searchPage() {
+  let foundIn = $('*:contains("GET")');
+  console.log('Searching Page!');
+  console.log(foundIn);
+}
+
 async function createManufacturers() {
   data = { key: apiKey, master_key: masterKey }
   response = await axios.post('/api/add-manufacturers', data);
