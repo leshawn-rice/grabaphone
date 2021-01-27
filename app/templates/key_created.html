@@ -2,7 +2,14 @@
 
 {% block title %}Generate API Key{% endblock %}
 
+{% block key_active %}active{% endblock %}
+
 {% block content %}
-<h1>API KEY CREATED</h1>
-<p>Your API Key: <strong>{{key.key}}</strong> has been saved and is ready to use!</p>
+
+<div class="row">
+    <div class="col text-center">
+        <h1 class="display-4">API KEY CREATED</h1>
+        <p class="lead">Your API Key: <strong>{{key.key}}</strong> has been saved and is ready to use!</p>
+    </div>
+</div>
 {% endblock %}

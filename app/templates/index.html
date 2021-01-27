@@ -2,16 +2,49 @@
 
 {% block title %}Home{% endblock %}
 
+{% block home_active %}active{% endblock %}
+
 {% block content %}
-<div>
-    <h1>Welcome to <em>GrabAPhone</em>!</h1>
-</div>
+<div class="row" id="content">
+    <!-- Routes -->
+    <div class="col-12 col-md-3 bg-light" id="instructions">
+        <p class="lead m-3 text-center">Endpoints</p>
 
+        <div class="card bg-secondary text-light my-2" id="generate-api-key-card">
+            <div class="card-header text-center bg-light">
+                <p class="text-dark"><span class="text-success">GET</span> /generate-api-key</p>
+            </div>
+            <div class="card-body">
+                <p class="lead card-text">Click the generate button on this page to generate a new API Key. API
+                    keys are free. You will be routed to a page that displays the API Key for you</p>
+            </div>
+        </div>
 
-<div>
-    <a href="/generate-api-key">
-        <h3>Get your API Key!</h3>
-    </a>
+        <div class="card bg-secondary text-light my-2" id="get-manufacturers-card">
+            <div class="card-header text-center bg-light">
+                <p class="text-dark"><span class="text-success">GET</span> /api/get-manufacturers</p>
+            </div>
+            <div class="card-body p-0">
+                <ul class="m-0">Requirements:
+                    <li>API Key</li>
+                </ul>
+
+                <ul class="m-0">Optional arguments:
+                    <li>Name (get a specific manufacturer by name)</li>
+                    <li>Limit (limit results to X manufacturers, with a max limit of 100)</li>
+                </ul>
+                <br>
+                <ul>Example Response
+                    <li><img src="NONE" alt="Example of GET Manufacturers"></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Example API Calls -->
+    <div class="col-12 col-md-9" id="examples">
+        <p class="lead text-dark text-center my-3">Content and example API calls</p>
+    </div>
 </div>
 
 {% endblock %}
