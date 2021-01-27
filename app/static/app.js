@@ -1,10 +1,27 @@
 const masterKey = 'masterkey';
-const apiKey = '829c7dd80297'
+const apiKey = '829c7dd80297';
+
+const endpointContainer = $('#endpoints');
 
 function searchPage() {
   let foundIn = $('*:contains("GET")');
   console.log('Searching Page!');
   console.log(foundIn);
+}
+
+$('#endpoints > div').on('click', function (e) {
+  console.log('Clicked a div!');
+  $(this).find('.card-body').toggle();
+});
+
+// endpointContainer.on('click', 'div', (e) => {
+//   console.log('Clicked a div!');
+// });
+
+function addListeners() {
+  for (let child of endpointContainer.children()) {
+    console.log(child);
+  }
 }
 
 async function createManufacturers() {

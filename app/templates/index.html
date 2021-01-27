@@ -6,25 +6,15 @@
 
 {% block content %}
 <div class="row" id="content">
-    <!-- Routes -->
-    <div class="col-12 col-md-3 bg-light" id="instructions">
+    <!-- Endpoints -->
+    <div class="col-12 col-md-3 bg-light" id="endpoints">
         <p class="lead m-3 text-center">Endpoints</p>
-
-        <div class="card bg-secondary text-light my-2" id="generate-api-key-card">
-            <div class="card-header text-center bg-light m-0 p-0">
-                <p class="text-dark lead"><span class="text-success">GET</span> /generate-api-key</p>
-            </div>
-            <div class="card-body" hidden>
-                <p class="lead card-text">Click the generate button on this page to generate a new API Key. API
-                    keys are free. You will be routed to a page that displays the API Key for you</p>
-            </div>
-        </div>
 
         <div class="card bg-secondary text-light my-2" id="get-manufacturers-card">
             <div class="card-header text-center bg-light m-0 p-0">
                 <p class="text-dark lead"><span class="text-success">GET</span> /api/get-manufacturers</p>
             </div>
-            <div class="card-body p-0" hidden>
+            <div class="card-body p-0">
                 <ul class="m-0">Requirements:
                     <li>API Key</li>
                 </ul>
@@ -44,7 +34,7 @@
             <div class="card-header text-center bg-light m-0 p-0">
                 <p class="text-dark lead"><span class="text-success">GET</span> /api/get-phones</p>
             </div>
-            <div class="card-body p-0" hidden>
+            <div class="card-body p-0">
                 <ul class="m-0">Requirements:
                     <li>API Key</li>
                 </ul>
