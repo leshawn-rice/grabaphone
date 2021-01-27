@@ -1,9 +1,10 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, abort
 from sqlalchemy import func
 from app.app import app
 from app.database import db
 from api.models import APIKey, Manufacturer, Phone
 from typing import List
+from functools import wraps
 import os
 
 
@@ -30,6 +31,17 @@ def generate_api_key():
 #################
 #  User Routes  #
 #################
+
+
+def api_key_required(f):
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        data = request.args
+        if not APIKey.validate(data):
+            abort(401)
+        return f(*args, **kwargs)
+    return decorated_func
+
 
 # Manufacturer Routes
 #####################################################################
@@ -67,6 +79,7 @@ def get_serialized_manufs(name: str = None, limit: str = '100') -> List['Manufac
 
 # Name, limit, offset, rating ** (Still need to come up with a pythonic way to rate the manufs)
 @app.route('/api/get-manufacturers', methods=['GET'])
+@api_key_required
 def get_manufacturers():
     '''Get manufacturers'''
     # Add offset
@@ -74,8 +87,8 @@ def get_manufacturers():
     name = data.get('name')
     limit = data.get('limit')
 
-    if not APIKey.validate(data):
-        return (jsonify({'message': 'API Key validation failed!'}), 200)
+    # if not APIKey.validate(data):
+    #     return (jsonify({'message': 'API Key validation failed!'}), 200)
     if not limit:
         limit = 100
     if not is_limit_convertable(limit):
@@ -162,8 +175,7 @@ def get_raw_phone_data():
     if not APIKey.validate(data) or not validate_master_key(data):
         return (jsonify({'message': 'Key Validation Failed!'}), 400)
 
-    manuf = Manufacturer.query.filter(func.lower(
-        Manufacturer.name) == name.lower()).first()
+    manuf = Manufacturer.query.filter(Manufacturer.name.ilike(name)).first()
 
     if not manuf:
         return (jsonify({'message': 'Invalid Manufacturer Name'}), 400)
