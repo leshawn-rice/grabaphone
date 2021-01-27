@@ -2,10 +2,11 @@ from flask import render_template, request, jsonify, abort, make_response
 from sqlalchemy import func
 from app.app import app
 from app.database import db
-from api.models import APIKey, Manufacturer, Phone
+from api.models import APIKey, Manufacturer, Phone, Spec
 from typing import List
 from functools import wraps
 import os
+import json
 
 
 # TODO
@@ -26,7 +27,11 @@ def api_key_required(f):
     '''Decorator to validate API Key'''
     @wraps(f)
     def decorated_func(*args, **kwargs):
-        data = request.args
+        data = None
+        if request.method == 'GET':
+            data = request.args
+        else:
+            data = request.json
         if not APIKey.validate(data):
             response = make_response(
                 jsonify({'message': 'API Key invalid!', 'status': 401}), 401)
@@ -39,8 +44,15 @@ def master_key_required(f):
     '''Decorator to validate master key (for updating db)'''
     @wraps(f)
     def decorated_func(*args, **kwargs):
-        data = request.args
+        data = None
+        if request.method == 'GET':
+            data = request.args
+        else:
+            data = request.json
+        print('Validating master')
+        print(data.get('master_key'))
         if data.get('master_key') != 'masterkey':
+            print(data.get('master_key'))
             response = make_response(
                 jsonify({'message': 'Master Key invalid!', 'status': 401}), 401)
             abort(response)
@@ -133,11 +145,82 @@ def get_manufacturers():
 # Phone Routes
 #####################################################################
 
+def sort_phones(sort):
+    # Get phones by release date
+    a = Spec.query.filter(Spec.category == 'Availability').order_by(
+        Spec.description.desc()).all()
+    # Get phones by price
+    b = Spec.query.filter(Spec.category.ilike(
+        'Buyers information'), Spec.name.ilike('Price:')).order_by(Spec.description.desc()).all()
+
+    s = a + b
+
+    phones = []
+
+    for spec in s:
+        if spec.phone not in phones:
+            phones.append(spec.phone)
+
+    # This is if we only wanna return the phone name and the requested specs
+    # for spec in s:
+    #     phones[spec.phone.name] = {}
+
+    # for spec in s:
+    #     phones[spec.phone.name][spec.name] = spec.description
+
+    # print(phones)
+
+    return phones
+
+
+def sort_and_get_phones(manufacturer: str, name: str, limit: str, raw_sort: str):
+    all_phones = Phone.query.all()
+    sort = None
+    sorting_map = {
+        'release': ('oldest', 'newest'),
+        'price': ('highest', 'lowest'),
+        'rating': ('highest', 'lowest')
+    }
+
+    if manufacturer:
+        m = Manufacturer.query.filter(
+            Manufacturer.name.ilike(manufacturer)).first()
+        if m:
+            all_phones = m.phones
+
+    if raw_sort:
+        sort = json.loads(raw_sort)
+
+    phones = sort_phones(sort)
+
+    # This is basically what sort_phones() does but a bit different
+    # p = Phone.query.join(Spec, Phone.id == Spec.phone_id).add_columns(
+    #     Spec.name, Spec.description).filter(Spec.category == 'Availability').order_by(Spec.description.asc()).all()
+
+    # phones = [p[0].serialize() for p in p]
+
+    return [p.serialize() for p in phones]
+
+
 @app.route('/api/get-phones', methods=['GET'])
 @api_key_required
 def get_phones():
     # Don't need to come up with a way to sort by battery, camera etc.
-    pass
+    data = request.args
+    manufacturer = data.get('manufacturer')
+    name = data.get('name')
+    limit = data.get('limit')
+    sort = data.get('sort')
+
+    if not limit:
+        limit = 100
+    if not is_limit_convertable(limit):
+        return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
+    else:
+        phones = sort_and_get_phones(
+            manufacturer=manufacturer, name=name, limit=limit, raw_sort=sort)
+        # return {'message': 'hey'}
+        return (jsonify({'Phones': phones}), 200)
 
 #####################################################################
 

@@ -23,6 +23,17 @@ function addListeners() {
   }
 }
 
+async function getPhones() {
+  data = { key: apiKey, manufacturer: 'Apple', 'sort': { 'release': 'newest', 'price': 'highest' }, limit: 5, name: 'iPhone' }
+  try {
+    response = await axios.get('/api/get-phones', { params: data });
+    console.log(response);
+  }
+  catch (e) {
+    console.log(e.response.data)
+  }
+}
+
 async function createManufacturers() {
   data = { key: apiKey, master_key: masterKey }
   response = await axios.post('/api/add-manufacturers', data);
@@ -54,6 +65,7 @@ async function addPhoneSpecs(phoneId) {
 
 async function createPhone(manufId, name, url) {
   let data = { key: apiKey, master_key: masterKey, manuf_id: manufId, name: name, url: url };
+  console.log(data);
   let response = await axios.post('/api/add-phone', data);
   console.log(response);
 }
