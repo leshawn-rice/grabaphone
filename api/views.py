@@ -76,6 +76,8 @@ def generate_api_key():
     show the user a unique, random 12-character
     key, along with a form to save they key.
     '''
+    db.drop_all()
+    db.create_all()
     raw_key = APIKey.generate()
     key_in_db = APIKey.create(raw_key)
     return render_template('key_created.html', key=key_in_db)
