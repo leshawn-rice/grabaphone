@@ -1,13 +1,11 @@
 # Grabaphone is a RESTful API that accepts and responds with JSON.
 
-## Grabaphone will allow developers to get cellphone data that has already been sorted into categories such as:
- - Ease of use
- - Battery Life
- - Size
- - Price
- - Availability
- - OS Preference
- - Feature preference (OLED, Refresh rate, Camera quality etc.)
- - And many more!!
+## Grabaphone will allow developers to get cellphone data from 5000+ devices!
+## Device data includes
+ - Device Manufacturer
+ - Device Name
+ - Device Rating 
+ - Device Specifications
+ - Device Image (Link)
 
-## Coming to Github by April 2021!
+## Going live by the end of February 2021!
