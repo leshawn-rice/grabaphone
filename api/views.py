@@ -9,6 +9,9 @@ import os
 import json
 
 
+MASTERKEY = os.environ.get('MASTER_KEY', None)
+
+
 # TODO
 # 3. Add ability to update & delete manufs/phones
 # 4. Add UI (almost done)
@@ -48,8 +51,7 @@ def master_key_required(f):
             data = request.args
         else:
             data = request.json
-        if data.get('master_key') != 'masterkey':
-            print(data.get('master_key'))
+        if data.get('master_key') != MASTERKEY:
             response = make_response(
                 jsonify({'message': 'Master Key invalid!', 'status': 401}), 401)
             abort(response)
