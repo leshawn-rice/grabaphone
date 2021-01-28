@@ -1,6 +1,6 @@
 # Grabaphone is a RESTful API that accepts and responds with JSON.
 
-## Grabaphone will allow developers to get cellphone data from 5000+ devices!
+## Grabaphone will allow developers to get cellular device data from 5000+ devices!
 ## Device data includes
  - Device Manufacturer
  - Device Name
