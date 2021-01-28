@@ -48,8 +48,6 @@ def master_key_required(f):
             data = request.args
         else:
             data = request.json
-        print('Validating master')
-        print(data.get('master_key'))
         if data.get('master_key') != 'masterkey':
             print(data.get('master_key'))
             response = make_response(
