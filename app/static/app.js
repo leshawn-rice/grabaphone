@@ -1,5 +1,5 @@
 const masterKey = 'masterkey';
-const apiKey = '829c7dd80297';
+const apiKey = '15800fe3842e';
 const searchBar = $('#search-form');
 
 function searchPage() {
@@ -95,6 +95,19 @@ async function createPhone(manufId, name, url) {
 }
 
 async function seedDb() {
-  let manufs = await createManufacturers();
-  console.log(manufs);
+  let manufObj = await createManufacturers();
+  for (let manuf of manufObj.Manufacturers) {
+    let phoneData = await getPhoneData(manuf.name);
+    console.log(phoneData[Object.keys(phoneData)[0]]);
+    for (let phone of phoneData[Object.keys(phoneData)[0]]) {
+      let id = manuf.id;
+      let name = phone.name;
+      let url = phone.url;
+      let phoneObj = await createPhone(id, name, url);
+      let phoneId = phoneObj.Phone.id
+      await addPhoneSpecs(phoneId);
+      console.log(`Finished ${name}`);
+    }
+    console.log(`Finished ${manuf.name}`);
+  }
 }
