@@ -186,7 +186,7 @@ def get_phones():
         limit = 100
     if not is_limit_convertable(limit):
         return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
-    if not is_manuf_name_valid(name=manufacturer):
+    if manufacturer and not is_manuf_name_valid(name=manufacturer):
         return (jsonify({'message': f'Manufacturer {manufacturer} invalid!'}), 400)
     else:
         phones = get_serialized_phones(
