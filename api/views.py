@@ -11,7 +11,6 @@ import json
 
 MASTERKEY = os.environ.get('MASTER_KEY', 'masterkey')
 
-
 # TODO
 # 3. Add ability to update & delete manufs/phones
 # 4. Add UI (almost done)
@@ -25,6 +24,8 @@ MASTERKEY = os.environ.get('MASTER_KEY', 'masterkey')
 
 #####################################################################
 # Not sure if abort is the best way to go about sending the error back
+
+
 def api_key_required(f):
     '''Decorator to validate API Key'''
     @wraps(f)
@@ -71,14 +72,11 @@ def master_key_required(f):
 @app.route('/generate-api-key', methods=['GET', 'POST'])
 def generate_api_key():
     '''
-    If the user sent a form (save key),
-    save the api key in the db. Otherwise,
-    show the user a unique, random 12-character
-    key, along with a form to save they key.
+    Creates, saves, and shows the user a unique, 
+    random 12-character API key.
     '''
-    raw_key = APIKey.generate()
-    key_in_db = APIKey.create(raw_key)
-    return render_template('key_created.html', key=key_in_db)
+    key = APIKey.generate()
+    return render_template('key_created.html', key=key)
 
 #####################################################################
 
@@ -251,6 +249,9 @@ def convert_manuf_id(id: str = None):
 def get_raw_phone_data():
     data = request.args
     name = data.get('name')
+    if not name:
+        return (jsonify({'message': 'You must proved a manufacturers name!'}), 400)
+
     manuf = Manufacturer.query.filter(Manufacturer.name.ilike(name)).first()
 
     if not manuf:
