@@ -189,7 +189,7 @@ def get_phones():
     else:
         phones = get_serialized_phones(
             manufacturer=manufacturer, name=name, limit=limit)
-        return (jsonify({'Phones': phones}), 200)
+        return (jsonify({'Devices': phones}), 200)
 
 #####################################################################
 
@@ -263,19 +263,19 @@ def get_raw_phone_data():
     return (jsonify(phones), 200)
 
 
-@app.route('/api/add-specs/<int:phone_id>', methods=['POST'])
+@app.route('/api/add-specs/<int:id>', methods=['POST'])
 @api_key_required
 @master_key_required
-def add_specs(phone_id):
+def add_specs(id):
     data = request.json
-    phone = Phone.query.get(phone_id)
+    phone = Phone.query.get(id)
 
     if not phone:
-        return (jsonify({'message': f'Phone ID {phone_id} invalid!'}), 400)
+        return (jsonify({'message': f'Device ID {id} invalid!'}), 400)
 
     specs = phone.scrape_specs()
 
-    return (jsonify({'Phone': phone.serialize()}), 200)
+    return (jsonify({'Device': phone.serialize()}), 200)
 
 
 @app.route('/api/add-phone', methods=['POST'])
@@ -296,7 +296,7 @@ def add_phone():
 
     if manuf:
         phone = Phone.create(name=name, manufacturer_id=manuf_id, url=url)
-        return (jsonify({'Phone': phone.serialize()}))
+        return (jsonify({'Device': phone.serialize()}))
     else:
         return (jsonify({'message': 'Invalid Manufacturer ID!'}), 200)
 
