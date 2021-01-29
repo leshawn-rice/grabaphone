@@ -16,6 +16,7 @@ MASTERKEY = os.environ.get('MASTER_KEY', 'masterkey')
 # 4. Add UI (almost done)
 # 5. Add tests
 # 6. Document
+# Change endpoints with phones from "phones" to "devices"
 # 7. Deploy
 # Make backend more cohesive (basically replace 'phone' with 'device')
 
