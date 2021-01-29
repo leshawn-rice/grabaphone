@@ -151,9 +151,13 @@ def get_serialized_phones(manufacturer: str, name: str, limit: str):
     serializes and then returns them
     '''
     limit = int(limit)
+    phones = None
     # If 'iPhone' is sent, we want Apple iPhone 12, 11... etc
-    phones = Phone.query.filter(Phone.name.ilike(
-        r"%{}%".format(name))).limit(limit).all()
+    if name:
+        phones = Phone.query.filter(Phone.name.ilike(
+            r"%{}%".format(name))).limit(limit).all()
+    else:
+        phones = Phone.query.limit(limit).all()
     if manufacturer:
         return [p.serialize() for p in phones if p.manufacturer.name.lower() == manufacturer.lower()]
     return [p.serialize() for p in phones]
