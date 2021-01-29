@@ -17,6 +17,7 @@ MASTERKEY = os.environ.get('MASTER_KEY', 'masterkey')
 # 5. Add tests
 # 6. Document
 # 7. Deploy
+# Make backend more cohesive (basically replace 'phone' with 'device')
 
 #######################
 #  Custom Decorators  #
