@@ -9,7 +9,7 @@ import os
 import json
 
 
-MASTERKEY = os.environ.get('MASTER_KEY', None)
+MASTERKEY = os.environ.get('MASTER_KEY', 'masterkey')
 
 
 # TODO

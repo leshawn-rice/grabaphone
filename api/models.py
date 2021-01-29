@@ -167,6 +167,7 @@ class Phone(db.Model):
     manufacturer_id = db.Column(db.Integer, db.ForeignKey(
         'manufacturers.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.Text, nullable=False)
+    rating = db.Column(db.Float)
     url = db.Column(db.Text, nullable=False)
 
     manufacturer = db.relationship('Manufacturer')
@@ -198,10 +199,25 @@ class Phone(db.Model):
         return {
             'id': self.id,
             'name': self.name,
+            'rating': self.rating,
             'url': self.url,
 
             'specs': self.serialize_specs()
         }
+
+    def get_rating(self, page):
+        '''
+        Gets the user rating for a phone off the given
+        page if available
+        '''
+        raw_rating = page.find('a', class_='widgetRating__user').find(
+            'div', class_='score').find_all(text=True, recursive=False)
+        rating = " ".join(str(raw_rating[0]).split())
+        try:
+            self.rating = float(rating)
+        except ValueError:
+            self.rating = 0.0
+        return
 
     def scrape_specs(self) -> List['Spec']:
         '''
@@ -209,6 +225,7 @@ class Phone(db.Model):
         '''
         response = requests.get(self.url)
         page = bsoup(response.text, 'html.parser')
+        self.get_rating(page)
         divs = page.find('div', class_='widgetSpecs').find_all('section')
 
         specs = []

@@ -1,5 +1,5 @@
 const masterKey = 'masterkey';
-const apiKey = '15800fe3842e';
+const apiKey = '42e3040ea9ee';
 const searchBar = $('#search-form');
 
 function searchPage() {
