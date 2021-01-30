@@ -47,8 +47,13 @@ class APIKey(db.Model):
             if not cls.query.filter_by(key=random_key).first():
                 key_created = True
                 key = random_key
-        key = cls.create(key)
         return key
+
+    @classmethod
+    def generate_and_create(cls):
+        '''Generates and creates a new API Key'''
+        key = cls.generate()
+        return cls.create(key)
 
 
 class Manufacturer(db.Model):

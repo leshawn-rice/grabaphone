@@ -77,7 +77,7 @@ def generate_api_key():
     Creates, saves, and shows the user a unique, 
     random 12-character API key.
     '''
-    key = APIKey.generate()
+    key = APIKey.generate_and_create()
     return render_template('key_created.html', key=key)
 
 #####################################################################
