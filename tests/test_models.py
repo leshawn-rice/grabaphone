@@ -19,3 +19,5 @@ class APIKeyTestCase(TestCase):
         self.assertIsInstance(key, APIKey)
         self.assertEqual(key.id, 1)
         self.assertEqual(key, APIKey.query.filter_by(key=key.key).first())
+
+# comment
