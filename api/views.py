@@ -37,7 +37,8 @@ def api_key_required(f):
             data = request.args
         else:
             data = request.json
-        if not APIKey.validate(data):
+        key = data.get('key')
+        if not APIKey.validate(key):
             response = make_response(
                 jsonify({'message': 'API Key invalid!', 'status': 401}), 401)
             abort(response)

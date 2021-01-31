@@ -16,8 +16,7 @@ class APIKey(db.Model):
         return f'<APIKey #{self.id}: {self.key}>'
 
     @classmethod
-    def validate(cls, data: dict):
-        key = data.get('key')
+    def validate(cls, key: str):
         if not cls.query.filter_by(key=key).first():
             return False
         return True
@@ -37,7 +36,6 @@ class APIKey(db.Model):
         Creates a unique, random 12-character
         key, and returns it
         '''
-
         key_created = False
         key = None
         # It's possible to generate an already existing key, this loops until a unique key is created
@@ -166,7 +164,7 @@ class Manufacturer(db.Model):
 
 
 class Phone(db.Model):
-    '''Phone Model'''
+    '''Device Model'''
     __tablename__ = 'phones'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -264,10 +262,10 @@ class Phone(db.Model):
 
     @classmethod
     def create(cls, name: str, manufacturer_id: int, url: str) -> 'Phone':
-        new_phone = cls(manufacturer_id=manufacturer_id, name=name, url=url)
-        db.session.add(new_phone)
+        device = cls(manufacturer_id=manufacturer_id, name=name, url=url)
+        db.session.add(device)
         db.session.commit()
-        return new_phone
+        return device
 
 
 class Spec(db.Model):
