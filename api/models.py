@@ -70,7 +70,7 @@ class Manufacturer(db.Model):
     def serialize(self):
         '''
         Returns a dictionary with the manufacturer's
-        information, and a list of their phones, for converting
+        information, and a list of their devices, for converting
         to JSON
         '''
         return {
@@ -81,17 +81,17 @@ class Manufacturer(db.Model):
             'devices': [p.serialize() for p in self.phones]
         }
 
-    def scrape_phones(self):
+    def scrape_devices(self):
         '''
-        Scrapes 5 pages of phones by the current manufacturer
+        Scrapes 5 pages of devices by the current manufacturer
         instance from phonearena.com, and returns a list of
-        dicts with the phone name, url, and manuf id
+        dicts with the device name, url, and manuf id
         '''
-        raw_phones = []
-        phones = []
+        raw_devices = []
+        devices = []
         url = self.url
 
-        # The first 5 pages is most recent 180 phones
+        # The first 5 pages is most recent 180 devices
         for i in range(5):
             response = requests.get(url)
             if response.status_code != 200:
@@ -99,16 +99,16 @@ class Manufacturer(db.Model):
                 break
             container = bsoup(response.text, 'html.parser').find(
                 id='finder-results')
-            current_phones = container.find_all('div', class_='stream-item')
-            raw_phones = list(set(raw_phones).union(current_phones))
+            current_devices = container.find_all('div', class_='stream-item')
+            raw_devices = list(set(raw_devices).union(current_devices))
             url = self.url + f'/page/{i+1}'
 
-        for phone in raw_phones:
-            name = phone.find('p', class_='title').text
-            url = phone.a['href']
-            phones.append({'name': name, 'url': url, 'manuf_id': self.id})
+        for device in raw_devices:
+            name = device.find('p', class_='title').text
+            url = device.a['href']
+            devices.append({'name': name, 'url': url, 'manuf_id': self.id})
 
-        return phones
+        return devices
 
     @classmethod
     def get(cls, name: str = None, limit: int = 100):
@@ -179,11 +179,11 @@ class Phone(db.Model):
     specs = db.relationship('Spec')
 
     def __repr__(self):
-        return f'<Phone #{self.id}: {self.manufacturer} {self.name}>'
+        return f'<Device #{self.id}: {self.manufacturer} {self.name}>'
 
     def serialize_specs(self):
         '''
-        Returns a dictionary with the phone's spec
+        Returns a dictionary with the device's spec
         information, for converting to JSON
         '''
         categories = {}
@@ -198,7 +198,7 @@ class Phone(db.Model):
 
     def serialize(self):
         '''
-        Returns a dictionary with the phone's information,
+        Returns a dictionary with the device's information,
         and a dict of their specs, for converting to JSON
         '''
         return {
