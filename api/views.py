@@ -12,13 +12,13 @@ import json
 MASTERKEY = os.environ.get('MASTER_KEY', 'masterkey')
 
 # TODO
-# 3. Add ability to update & delete manufs/phones
+# 3. Add ability to update & delete manufs/devices
 # 4. Add UI (almost done)
 # 5. Add tests
 # 6. Document
-# Change endpoints with phones from "phones" to "devices"
+# Change endpoints with devices from "devices" to "devices"
 # 7. Deploy
-# Make backend more cohesive (basically replace 'phone' with 'device')
+# Make backend more cohesive (basically replace 'device' with 'device')
 
 #######################
 #  Custom Decorators  #
@@ -142,27 +142,27 @@ def get_manufacturers():
 #####################################################################
 
 
-# Phone Routes
+# Device Routes
 #####################################################################
 
 # Might add additional sorting options later
 
-def get_serialized_phones(manufacturer: str, name: str, limit: str):
+def get_serialized_devices(manufacturer: str, name: str, limit: str):
     '''
-    Gets {limit} phones with the given manufacturer, that match the given name,
+    Gets {limit} devices with the given manufacturer, that match the given name,
     serializes and then returns them
     '''
     limit = int(limit)
-    phones = None
+    devices = None
     # If 'iPhone' is sent, we want Apple iPhone 12, 11... etc
     if name:
-        phones = Phone.query.filter(Phone.name.ilike(
+        devices = Phone.query.filter(Phone.name.ilike(
             r"%{}%".format(name))).limit(limit).all()
     else:
-        phones = Phone.query.limit(limit).all()
+        devices = Phone.query.limit(limit).all()
     if manufacturer:
-        return [p.serialize() for p in phones if p.manufacturer.name.lower() == manufacturer.lower()]
-    return [p.serialize() for p in phones]
+        return [d.serialize() for d in devices if p.manufacturer.name.lower() == manufacturer.lower()]
+    return [d.serialize() for d in devices]
 
 
 def is_manuf_name_valid(name):
@@ -176,11 +176,11 @@ def is_manuf_name_valid(name):
     return False
 
 
-@app.route('/api/get-phones', methods=['GET'])
+@app.route('/api/get-devices', methods=['GET'])
 @api_key_required
-def get_phones():
+def get_devices():
     '''
-    Get phones
+    Get devices
     '''
     data = request.args
     manufacturer = data.get('manufacturer')
@@ -194,9 +194,9 @@ def get_phones():
     if manufacturer and not is_manuf_name_valid(name=manufacturer):
         return (jsonify({'message': f'Manufacturer {manufacturer} invalid!'}), 400)
     else:
-        phones = get_serialized_phones(
+        devices = get_serialized_devices(
             manufacturer=manufacturer, name=name, limit=limit)
-        return (jsonify({'Devices': phones}), 200)
+        return (jsonify({'Devices': devices}), 200)
 
 #####################################################################
 
@@ -237,7 +237,7 @@ def delete_manufacturers():
 #####################################################################
 
 
-# Phone Routes
+# Device Routes
 #####################################################################
 
 def convert_manuf_id(id: str = None):
@@ -248,12 +248,12 @@ def convert_manuf_id(id: str = None):
     return id
 
 
-# To seed the db, get phone data for each manufacturer, then create phones
+# To seed the db, get device data for each manufacturer, then create devices
 
-@app.route('/api/get-phone-data', methods=['GET'])
+@app.route('/api/get-device-data', methods=['GET'])
 @api_key_required
 @master_key_required
-def get_raw_phone_data():
+def get_raw_device_data():
     data = request.args
     name = data.get('name')
     if not name:
@@ -264,10 +264,10 @@ def get_raw_phone_data():
     if not manuf:
         return (jsonify({'message': 'Invalid Manufacturer Name'}), 400)
 
-    phones = {}
-    phones[manuf.name] = manuf.scrape_phones()
+    devices = {}
+    devices[manuf.name] = manuf.scrape_devices()
 
-    return (jsonify(phones), 200)
+    return (jsonify(devices), 200)
 
 
 @app.route('/api/add-specs/<int:id>', methods=['POST'])
@@ -275,20 +275,20 @@ def get_raw_phone_data():
 @master_key_required
 def add_specs(id):
     data = request.json
-    phone = Phone.query.get(id)
+    device = Phone.query.get(id)
 
-    if not phone:
+    if not device:
         return (jsonify({'message': f'Device ID {id} invalid!'}), 400)
 
-    specs = phone.scrape_specs()
+    specs = device.scrape_specs()
 
-    return (jsonify({'Device': phone.serialize()}), 200)
+    return (jsonify({'Device': device.serialize()}), 200)
 
 
-@app.route('/api/add-phone', methods=['POST'])
+@app.route('/api/add-device', methods=['POST'])
 @api_key_required
 @master_key_required
-def add_phone():
+def add_device():
     data = request.json
 
     name = data.get('name')
@@ -302,23 +302,23 @@ def add_phone():
     manuf = Manufacturer.query.get(manuf_id)
 
     if manuf:
-        phone = Phone.create(name=name, manufacturer_id=manuf_id, url=url)
-        return (jsonify({'Device': phone.serialize()}))
+        device = Phone.create(name=name, manufacturer_id=manuf_id, url=url)
+        return (jsonify({'Device': device.serialize()}))
     else:
         return (jsonify({'message': 'Invalid Manufacturer ID!'}), 200)
 
 
-@app.route('/api/update-phones', methods=['PATCH'])
+@app.route('/api/update-devices', methods=['PATCH'])
 @api_key_required
 @master_key_required
-def update_phones():
+def update_devices():
     pass
 
 
-@app.route('/api/delete-phones', methods=['DELETE'])
+@app.route('/api/delete-devices', methods=['DELETE'])
 @api_key_required
 @master_key_required
-def delete_phones():
+def delete_devices():
     pass
 
 #####################################################################
