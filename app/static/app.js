@@ -58,7 +58,6 @@ async function getManufacturers() {
   try {
     response = await axios.get('/api/get-manufacturers', { params: data });
     console.log(response.data);
-    return response.data
   }
   catch (e) {
     console.log(e.response.data);
