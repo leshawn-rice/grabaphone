@@ -13,11 +13,12 @@ def add_to_db(item):
     db.session.commit()
 
 
+db.drop_all()
+db.create_all()
+
+
 class APIKeyTestCase(TestCase):
     '''APIKey Test Case'''
-    def setUpClass():
-        db.drop_all()
-        db.create_all()
 
     def test_validate(self):
         '''Test validation of valid key'''
@@ -58,18 +59,27 @@ class APIKeyTestCase(TestCase):
 class DeviceTestCase(TestCase):
     '''Device Test Case'''
 
-    # def setUpClass():
-    #     db.drop_all()
-    #     db.create_all()
+    # Test scraping? Cant be done with test data has to be done with real data
 
     def test_creation(self):
         '''Test that creating a new Device is as expected'''
-        manuf = Manufacturer(name='test manuf', url='https://testmanuf.com')
-        add_to_db(manuf)
-        device = Device(name='test device', rating=10.0,
-                        url='https://testphone.com', manufacturer_id=1)
-        add_to_db(device)
+        manuf = Manufacturer.create(
+            name='test manuf', url='https://testmanuf.com')
+        device = Device.create(
+            name='test device', url='https://testphone.com', manufacturer_id=1)
         self.assertIsInstance(device, Device)
         self.assertEqual(device.name, 'test device')
-        self.assertEqual(device.rating, 10.0)
         self.assertEqual(device.manufacturer, manuf)
+
+    def test_serialize(self):
+        '''Test that serializing a Device runs correctly'''
+        manuf = Manufacturer.create(
+            name='test manuf', url='https://testmanuf.com')
+        device = Device.create(
+            name='test device', url='https://testphone.com', manufacturer_id=1)
+        serialized = device.serialize()
+        self.assertEqual(serialized['name'], 'test device')
+        self.assertEqual(serialized['rating'], None)
+        self.assertEqual(serialized['image_url'], None)
+        self.assertEqual(serialized['device_url'], 'https://testphone.com')
+        self.assertEqual(serialized['specs'], {})
