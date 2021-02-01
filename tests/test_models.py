@@ -1,11 +1,16 @@
 from unittest import TestCase
-from api.models import APIKey
+from api.models import APIKey, Device, Manufacturer
 from app.app import app
 from app.database import db
 
 app.config['TESTING'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test-db'
 app.config['SQLALCHEMY_ECHO'] = False
+
+
+def add_to_db(item):
+    db.session.add(item)
+    db.session.commit()
 
 
 class APIKeyTestCase(TestCase):
@@ -29,9 +34,7 @@ class APIKeyTestCase(TestCase):
 
     def test_generate(self):
         '''Test Generation of 12-character hexadecimal API Key is successful'''
-        print('Starting test')
         key = APIKey.generate()
-        print('Key generated')
         self.assertEqual(len(key), 12)
         self.assertIsInstance(key, str)
         self.assertIsNone(APIKey.query.filter_by(key=key).first())
@@ -55,6 +58,18 @@ class APIKeyTestCase(TestCase):
 class DeviceTestCase(TestCase):
     '''Device Test Case'''
 
-    def setUpClass():
-        db.drop_all()
-        db.create_all()
+    # def setUpClass():
+    #     db.drop_all()
+    #     db.create_all()
+
+    def test_creation(self):
+        '''Test that creating a new Device is as expected'''
+        manuf = Manufacturer(name='test manuf', url='https://testmanuf.com')
+        add_to_db(manuf)
+        device = Device(name='test device', rating=10.0,
+                        url='https://testphone.com', manufacturer_id=1)
+        add_to_db(device)
+        self.assertIsInstance(device, Device)
+        self.assertEqual(device.name, 'test device')
+        self.assertEqual(device.rating, 10.0)
+        self.assertEqual(device.manufacturer, manuf)

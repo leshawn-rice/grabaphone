@@ -16,9 +16,7 @@ MASTERKEY = os.environ.get('MASTER_KEY', 'masterkey')
 # 4. Add UI (almost done)
 # 5. Add tests
 # 6. Document
-# Change endpoints with devices from "devices" to "devices"
 # 7. Deploy
-# Make backend more cohesive (basically replace 'device' with 'device')
 
 #######################
 #  Custom Decorators  #
