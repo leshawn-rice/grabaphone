@@ -62,7 +62,7 @@ class Manufacturer(db.Model):
     name = db.Column(db.Text, nullable=False)
     url = db.Column(db.Text, nullable=False)
 
-    phones = db.relationship('Phone')
+    devices = db.relationship('Device')
 
     def __repr__(self):
         return f'<Manufacturer #{self.id}: {self.name}>'
@@ -78,7 +78,7 @@ class Manufacturer(db.Model):
             'name': self.name,
             'url': self.url,
 
-            'devices': [p.serialize() for p in self.phones]
+            'devices': [p.serialize() for p in self.devices]
         }
 
     def scrape_devices(self):
@@ -163,9 +163,9 @@ class Manufacturer(db.Model):
             cls.create(name=name, url=url)
 
 
-class Phone(db.Model):
+class Device(db.Model):
     '''Device Model'''
-    __tablename__ = 'phones'
+    __tablename__ = 'devices'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     manufacturer_id = db.Column(db.Integer, db.ForeignKey(
@@ -256,12 +256,12 @@ class Phone(db.Model):
                 name = " ".join(str(spec.th.text).split())
                 description = " ".join(str(spec.td.text).split())
                 new_spec = Spec.create(
-                    phone_id=self.id, category=category, name=name, description=description)
+                    device_id=self.id, category=category, name=name, description=description)
                 specs.append(new_spec)
         return specs
 
     @classmethod
-    def create(cls, name: str, manufacturer_id: int, url: str) -> 'Phone':
+    def create(cls, name: str, manufacturer_id: int, url: str) -> 'Device':
         device = cls(manufacturer_id=manufacturer_id, name=name, url=url)
         db.session.add(device)
         db.session.commit()
@@ -273,16 +273,16 @@ class Spec(db.Model):
     __tablename__ = 'specs'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    phone_id = db.Column(db.Integer, db.ForeignKey(
-        'phones.id', ondelete='CASCADE'), nullable=False)
+    device_id = db.Column(db.Integer, db.ForeignKey(
+        'devices.id', ondelete='CASCADE'), nullable=False)
     category = db.Column(db.Text, nullable=False)
     name = db.Column(db.Text, nullable=False)
     description = db.Column(db.Text, nullable=False)
 
-    phone = db.relationship('Phone')
+    device = db.relationship('Device')
 
     def __repr__(self):
-        return f'<Spec #{self.id}: {self.phone.name} - {self.name}: {self.description}>'
+        return f'<Spec #{self.id}: {self.device.name} - {self.name}: {self.description}>'
 
     def serialize(self):
         return {
@@ -292,8 +292,8 @@ class Spec(db.Model):
         }
 
     @classmethod
-    def create(cls, phone_id: int, category: str, name: str, description: str) -> 'Spec':
-        new_spec = cls(phone_id=phone_id, category=category,
+    def create(cls, device_id: int, category: str, name: str, description: str) -> 'Spec':
+        new_spec = cls(device_id=device_id, category=category,
                        name=name, description=description)
         db.session.add(new_spec)
         db.session.commit()
