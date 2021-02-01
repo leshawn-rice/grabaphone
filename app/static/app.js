@@ -86,16 +86,6 @@ async function getPhoneData(names) {
     console.log(e)
     return undefined
   }
-  // let data = { key: apiKey, master_key: masterKey, name: manufName };
-  // try {
-  //   let response = await axios.get('/api/get-device-data', { params: data });
-  //   console.log(response.data);
-  //   return response.data;
-  // }
-  // catch (e) {
-  //   console.log(e.response.data);
-  //   return e.response.data;
-  // }
 }
 
 async function addPhoneSpecs(phoneId) {
