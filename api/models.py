@@ -216,8 +216,17 @@ class Device(db.Model):
         Gets the user rating for a device off the given
         page if available
         '''
-        raw_rating = page.find('a', class_='widgetRating__phonearena').find(
-            'div', class_='score').find_all(text=True, recursive=False)
+        # recently added
+        raw_rating = None
+        try:
+            raw_rating = page.find('a', class_='widgetRating__phonearena').find(
+                'div', class_='score').find_all(text=True, recursive=False)
+        except AttributeError:
+            try: 
+                raw_rating = page.find('a', class_='widgetRating__user').find(
+                    'div', class_='score').find_all(text=True, recursive=False)
+            except AttributeError:
+                raw_rating = [0.0]
         rating = " ".join(str(raw_rating[0]).split())
         try:
             self.rating = float(rating)
@@ -230,10 +239,13 @@ class Device(db.Model):
         Gets the device image for a device off the given
         page if available
         '''
-        img = page.find('picture', class_='portrait').find(
-            'noscript').find('img')
-        img_link = img.attrs['src']
-        self.image = img_link
+        try:
+            img = page.find('picture', class_='portrait').find(
+                'noscript').find('img')
+            img_link = img.attrs['src']
+            self.image = img_link
+        except AttributeError:
+            print('No Image Found!')
         return
 
     def scrape_specs(self) -> List['Spec']:
@@ -242,7 +254,10 @@ class Device(db.Model):
         device page and creates the specs for the device
         '''
         response = requests.get(self.url)
+        # recently added
         page = bsoup(response.text, 'html.parser')
+        if not page:
+            return []
         self.get_rating(page)
         self.get_image(page)
         divs = page.find('div', class_='widgetSpecs').find_all('section')

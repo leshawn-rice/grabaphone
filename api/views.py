@@ -263,6 +263,7 @@ def get_raw_device_data():
         return (jsonify({'message': 'Invalid Manufacturer Name'}), 400)
 
     devices = {}
+    devices['id'] = manuf.id
     devices[manuf.name] = manuf.scrape_devices()
 
     return (jsonify(devices), 200)

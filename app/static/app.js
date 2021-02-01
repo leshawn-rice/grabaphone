@@ -1,5 +1,5 @@
 const masterKey = 'masterkey';
-const apiKey = '116bf6a3248d';
+const apiKey = 'b435ee7974f3';
 const searchBar = $('#search-form');
 
 function searchPage() {
@@ -20,7 +20,7 @@ $('#endpoints > div').on('click', function (e) {
 async function getPhones() {
   data = { key: apiKey, manufacturer: 'Apple', limit: 5, name: 'iPhone' }
   try {
-    response = await axios.get('/api/get-phones', { params: data });
+    response = await axios.get('/api/get-devices', { params: data });
     console.log(response.data);
     return response.data;
   }
@@ -57,7 +57,7 @@ async function getManufacturers() {
 async function getPhoneData(manufName) {
   let data = { key: apiKey, master_key: masterKey, name: manufName };
   try {
-    let response = await axios.get('/api/get-phone-data', { params: data });
+    let response = await axios.get('/api/get-device-data', { params: data });
     console.log(response.data);
     return response.data;
   }
@@ -84,7 +84,7 @@ async function createPhone(manufId, name, url) {
   let data = { key: apiKey, master_key: masterKey, manuf_id: manufId, name: name, url: url };
 
   try {
-    let response = await axios.post('/api/add-phone', data);
+    let response = await axios.post('/api/add-device', data);
     console.log(response);
     return response.data;
   }
@@ -110,4 +110,45 @@ async function seedDb() {
     }
     console.log(`Finished ${manuf.name}`);
   }
+}
+
+// This should hopefully be significantly faster!
+
+// This sorta works but not really
+
+async function parallelSeed() {
+  let manufObj = await createManufacturers();
+  const deviceDataPromises = []
+  for (let manuf of manufObj.Manufacturers) {
+    deviceDataPromises.push(getPhoneData(manuf.name));
+  }
+  console.log('Device Data Promises Pushed!')
+  for (let dataPromise of deviceDataPromises) {
+    const deviceData = await dataPromise;
+    const devicePromises = []
+    try {
+      for (let device of deviceData[Object.keys(deviceData)[0]]) {
+          let manuf_id = deviceData.id;
+          let device_name = device.name;
+          let device_url = device.url;
+          devicePromises.push(createPhone(manuf_id, device_name, device_url))
+      }
+    }
+    catch (e) {
+      console.log(e)
+    }
+    console.log('Device Promises Pushed!')
+    const specPromises = [];
+    for (let devPromise of devicePromises) {
+        let deviceObj = await devPromise;
+        let deviceId = deviceObj.Device.id;
+        specPromises.push(addPhoneSpecs(deviceId));
+    }
+    console.log('Spec Promises Pushed!')
+    for (let specPromise of specPromises) {
+        await specPromise;
+    }
+    console.log('Spec Promises Finished')
+  }
+  console.log('Finished!')
 }
