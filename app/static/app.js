@@ -1,5 +1,5 @@
 const masterKey = 'masterkey';
-const apiKey = 'b435ee7974f3';
+const apiKey = '60a40d08451a';
 const searchBar = $('#search-form');
 
 function searchPage() {
@@ -8,9 +8,19 @@ function searchPage() {
    * for the text inside the search
    * bar. Then scrolls to it
    */
-  let foundIn = $('*:contains("GET")');
-  console.log('Searching Page!');
-  console.log(foundIn);
+
+  let searchTerm = $('#search-input').val();
+  if (searchTerm.length < 3) {
+    return
+  }
+  $(`*:contains("${searchTerm}")`).each(function () {
+    try {
+      document.getElementById($(this)[0].id).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    catch (e) {
+      continue;
+    }
+  });
 }
 
 $('#endpoints > div').on('click', function (e) {
@@ -128,10 +138,10 @@ async function parallelSeed() {
     const devicePromises = []
     try {
       for (let device of deviceData[Object.keys(deviceData)[0]]) {
-          let manuf_id = deviceData.id;
-          let device_name = device.name;
-          let device_url = device.url;
-          devicePromises.push(createPhone(manuf_id, device_name, device_url))
+        let manuf_id = deviceData.id;
+        let device_name = device.name;
+        let device_url = device.url;
+        devicePromises.push(createPhone(manuf_id, device_name, device_url))
       }
     }
     catch (e) {
@@ -139,14 +149,19 @@ async function parallelSeed() {
     }
     console.log('Device Promises Pushed!')
     const specPromises = [];
-    for (let devPromise of devicePromises) {
+    try {
+      for (let devPromise of devicePromises) {
         let deviceObj = await devPromise;
         let deviceId = deviceObj.Device.id;
         specPromises.push(addPhoneSpecs(deviceId));
+      }
+    }
+    catch (e) {
+      console.log(e);
     }
     console.log('Spec Promises Pushed!')
     for (let specPromise of specPromises) {
-        await specPromise;
+      await specPromise;
     }
     console.log('Spec Promises Finished')
   }

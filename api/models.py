@@ -222,7 +222,7 @@ class Device(db.Model):
             raw_rating = page.find('a', class_='widgetRating__phonearena').find(
                 'div', class_='score').find_all(text=True, recursive=False)
         except AttributeError:
-            try: 
+            try:
                 raw_rating = page.find('a', class_='widgetRating__user').find(
                     'div', class_='score').find_all(text=True, recursive=False)
             except AttributeError:
@@ -260,7 +260,10 @@ class Device(db.Model):
             return []
         self.get_rating(page)
         self.get_image(page)
-        divs = page.find('div', class_='widgetSpecs').find_all('section')
+        try:
+            divs = page.find('div', class_='widgetSpecs').find_all('section')
+        except AttributeError:
+            return []
 
         specs = []
 
