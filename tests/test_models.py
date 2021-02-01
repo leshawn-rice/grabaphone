@@ -7,12 +7,6 @@ app.config['TESTING'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test-db'
 app.config['SQLALCHEMY_ECHO'] = False
 
-
-def add_to_db(item):
-    db.session.add(item)
-    db.session.commit()
-
-
 db.drop_all()
 db.create_all()
 
