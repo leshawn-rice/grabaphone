@@ -58,17 +58,19 @@ class DeviceTestCase(TestCase):
     def setUp(self):
         self.manuf = Manufacturer.create(
             name='test manuf', url='https://testmanuf.com')
-        self.device = Device.create(
-            name='test device', url='https://testphone.com', manufacturer_id=1)
 
     def test_creation(self):
         '''Test that creating a new Device is as expected'''
-        self.assertIsInstance(self.device, Device)
-        self.assertEqual(self.device.name, 'test device')
-        self.assertEqual(self.device.manufacturer, self.manuf)
+        device = Device.create(
+            name='test device', url='https://testphone.com', manufacturer_id=1)
+        self.assertIsInstance(device, Device)
+        self.assertEqual(device.name, 'test device')
+        self.assertEqual(device.manufacturer, self.manuf)
 
     def test_serialize(self):
         '''Test that serializing a Device runs correctly'''
+        device = Device.create(
+            name='test device', url='https://testphone.com', manufacturer_id=1)
         serialized = self.device.serialize()
         self.assertEqual(serialized['name'], 'test device')
         self.assertEqual(serialized['rating'], None)
