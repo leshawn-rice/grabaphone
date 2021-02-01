@@ -2,7 +2,7 @@ from flask import render_template, request, jsonify, abort, make_response
 from sqlalchemy import func
 from app.app import app
 from app.database import db
-from api.models import APIKey, Manufacturer, Phone, Spec
+from api.models import APIKey, Manufacturer, Device, Spec
 from typing import List
 from functools import wraps
 import os
@@ -156,10 +156,10 @@ def get_serialized_devices(manufacturer: str, name: str, limit: str):
     devices = None
     # If 'iPhone' is sent, we want Apple iPhone 12, 11... etc
     if name:
-        devices = Phone.query.filter(Phone.name.ilike(
+        devices = Device.query.filter(Device.name.ilike(
             r"%{}%".format(name))).limit(limit).all()
     else:
-        devices = Phone.query.limit(limit).all()
+        devices = Device.query.limit(limit).all()
     if manufacturer:
         return [d.serialize() for d in devices if p.manufacturer.name.lower() == manufacturer.lower()]
     return [d.serialize() for d in devices]
@@ -275,7 +275,7 @@ def get_raw_device_data():
 @master_key_required
 def add_specs(id):
     data = request.json
-    device = Phone.query.get(id)
+    device = Device.query.get(id)
 
     if not device:
         return (jsonify({'message': f'Device ID {id} invalid!'}), 400)
@@ -302,7 +302,7 @@ def add_device():
     manuf = Manufacturer.query.get(manuf_id)
 
     if manuf:
-        device = Phone.create(name=name, manufacturer_id=manuf_id, url=url)
+        device = Device.create(name=name, manufacturer_id=manuf_id, url=url)
         return (jsonify({'Device': device.serialize()}))
     else:
         return (jsonify({'message': 'Invalid Manufacturer ID!'}), 200)
