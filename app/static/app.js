@@ -1,5 +1,5 @@
 const masterKey = 'masterkey';
-const apiKey = '60a40d08451a';
+const apiKey = '583f6187e9a4';
 const searchBar = $('#search-form');
 
 function searchPage() {
@@ -18,7 +18,7 @@ function searchPage() {
       document.getElementById($(this)[0].id).scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     catch (e) {
-      continue;
+      // ignore elements that have no id
     }
   });
 }
@@ -54,27 +54,48 @@ async function createManufacturers() {
 }
 
 async function getManufacturers() {
-  data = { key: apiKey, name: 'Apple' }
+  data = { key: apiKey }
   try {
     response = await axios.get('/api/get-manufacturers', { params: data });
     console.log(response.data);
+    return response.data
   }
   catch (e) {
     console.log(e.response.data);
   }
 }
 
-async function getPhoneData(manufName) {
-  let data = { key: apiKey, master_key: masterKey, name: manufName };
+async function getPhoneData(names) {
+  const promises = []
+  for (let name of names) {
+    let data = { key: apiKey, master_key: masterKey, name: name }
+    try {
+      let response = axios.get('/api/get-device-data', { params: data });
+      promises.push(response);
+    }
+    catch (e) {
+      console.log(e);
+    }
+  }
   try {
-    let response = await axios.get('/api/get-device-data', { params: data });
-    console.log(response.data);
-    return response.data;
+    fulfilledPromises = await Promise.all(promises);
+    phoneData = fulfilledPromises.map(p => p.data);
+    return phoneData;
   }
   catch (e) {
-    console.log(e.response.data);
-    return e.response.data;
+    console.log(e)
+    return undefined
   }
+  // let data = { key: apiKey, master_key: masterKey, name: manufName };
+  // try {
+  //   let response = await axios.get('/api/get-device-data', { params: data });
+  //   console.log(response.data);
+  //   return response.data;
+  // }
+  // catch (e) {
+  //   console.log(e.response.data);
+  //   return e.response.data;
+  // }
 }
 
 async function addPhoneSpecs(phoneId) {
@@ -124,21 +145,18 @@ async function seedDb() {
 
 // This should hopefully be significantly faster!
 
-// This sorta works but not really
+// This works! cut time from 2 hours to 1 hour
 
 async function parallelSeed() {
   let manufObj = await createManufacturers();
-  const deviceDataPromises = []
-  for (let manuf of manufObj.Manufacturers) {
-    deviceDataPromises.push(getPhoneData(manuf.name));
-  }
-  console.log('Device Data Promises Pushed!')
+  const manufNames = manufObj.Manufacturers.map(m => m.name);
+  let deviceDataPromises = await getPhoneData(manufNames)
   for (let dataPromise of deviceDataPromises) {
-    const deviceData = await dataPromise;
     const devicePromises = []
     try {
-      for (let device of deviceData[Object.keys(deviceData)[0]]) {
-        let manuf_id = deviceData.id;
+      console.log(dataPromise);
+      for (let device of dataPromise[Object.keys(dataPromise)[0]]) {
+        let manuf_id = dataPromise.id;
         let device_name = device.name;
         let device_url = device.url;
         devicePromises.push(createPhone(manuf_id, device_name, device_url))
@@ -147,23 +165,19 @@ async function parallelSeed() {
     catch (e) {
       console.log(e)
     }
-    console.log('Device Promises Pushed!')
+    fulfilledDevicePromises = await Promise.all(devicePromises);
     const specPromises = [];
     try {
-      for (let devPromise of devicePromises) {
-        let deviceObj = await devPromise;
-        let deviceId = deviceObj.Device.id;
+      for (let devPromise of fulfilledDevicePromises) {
+        console.log(devPromise);
+        let deviceId = devPromise.Device.id;
         specPromises.push(addPhoneSpecs(deviceId));
       }
     }
     catch (e) {
       console.log(e);
     }
-    console.log('Spec Promises Pushed!')
-    for (let specPromise of specPromises) {
-      await specPromise;
-    }
-    console.log('Spec Promises Finished')
+    await Promise.all(specPromises)
   }
   console.log('Finished!')
 }
