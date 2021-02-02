@@ -5,6 +5,13 @@ from typing import List
 from app.database import db
 
 
+###################
+#  API Key Model  #
+###################
+
+
+#####################################################################
+
 class APIKey(db.Model):
     '''API Key Model'''
     __tablename__ = 'api_keys'
@@ -53,6 +60,15 @@ class APIKey(db.Model):
         key = cls.generate()
         return cls.create(key)
 
+#####################################################################
+
+
+########################
+#  Manufacturer Model  #
+########################
+
+
+#####################################################################
 
 class Manufacturer(db.Model):
     '''Manufacturer Model'''
@@ -163,6 +179,15 @@ class Manufacturer(db.Model):
             url = manuf['url']
             cls.create(name=name, url=url)
 
+#####################################################################
+
+
+##################
+#  Device Model  #
+##################
+
+
+#####################################################################
 
 class Device(db.Model):
     '''Device Model'''
@@ -305,6 +330,15 @@ class Device(db.Model):
         db.session.commit()
         return device
 
+#####################################################################
+
+
+#########################
+#  Specification Model  #
+#########################
+
+
+#####################################################################
 
 class Spec(db.Model):
     '''Specification Model'''
@@ -336,3 +370,5 @@ class Spec(db.Model):
         db.session.add(new_spec)
         db.session.commit()
         return new_spec
+
+#####################################################################
