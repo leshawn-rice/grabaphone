@@ -101,25 +101,9 @@ def is_limit_convertable(limit: str = None):
     except ValueError:
         return False
 
-
-def get_serialized_manufs(name: str = None, limit: str = '100') -> List['Manufacturer']:
-    '''
-    Takes in an optional name and limit, and returns a list of serialized
-    manufacturers matching the name and/or limit.
-    '''
-    limit = int(limit)
-    manufs = None
-    # We need this if statement because if name is None and we filter by it we get 0 results
-    if name:
-        manufs = Manufacturer.query.filter_by(name=name).limit(limit).all()
-    else:
-        manufs = Manufacturer.query.limit(limit).all()
-    # Put manufacturers in JSON format
-    serialized_manufs = [m.serialize() for m in manufs]
-    return serialized_manufs
-
-
 # Name, limit, offset, rating ** (Still need to come up with a pythonic way to rate the manufs)
+
+
 @app.route('/api/get-manufacturers', methods=['GET'])
 @api_key_required
 def get_manufacturers():
@@ -133,9 +117,9 @@ def get_manufacturers():
         limit = 100
     if not is_limit_convertable(limit):
         return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
-    else:
-        serialized_manufs = get_serialized_manufs(name=name, limit=limit)
-        return (jsonify({'Manufacturers': serialized_manufs}), 200)
+    limit = int(limit)
+    manufacturers = Manufacturer.get(name=name, limit=limit)
+    return (jsonify({'Manufacturers': manufacturers}), 200)
 
 #####################################################################
 
@@ -197,20 +181,6 @@ def add_manufacturers():
         return (jsonify({'Manufacturers': [m.serialize() for m in Manufacturer.query.all()]}), 200)
     else:
         return (jsonify({'message': 'Error adding manufacturers!'}), 400)
-
-
-@app.route('/api/update-manufacturers', methods=['PATCH'])
-@api_key_required
-@master_key_required
-def update_manufacturers():
-    pass
-
-
-@app.route('/api/delete-manufacturers', methods=['DELETE'])
-@api_key_required
-@master_key_required
-def delete_manufacturers():
-    pass
 
 #####################################################################
 
@@ -285,19 +255,5 @@ def add_device():
         return (jsonify({'Device': device.serialize()}))
     else:
         return (jsonify({'message': 'Invalid Manufacturer ID!'}), 200)
-
-
-@app.route('/api/update-devices', methods=['PATCH'])
-@api_key_required
-@master_key_required
-def update_devices():
-    pass
-
-
-@app.route('/api/delete-devices', methods=['DELETE'])
-@api_key_required
-@master_key_required
-def delete_devices():
-    pass
 
 #####################################################################

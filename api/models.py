@@ -124,7 +124,8 @@ class Manufacturer(db.Model):
             manufs = cls.query.filter_by(name=name).limit(limit).all()
         else:
             manufs = cls.query.limit(limit).all()
-        return manufs
+        serialized_manufs = [m.serialize() for m in manufs]
+        return serialized_manufs
 
     @classmethod
     def create(cls, name: str, url: str) -> 'Manufacturer':
@@ -280,22 +281,22 @@ class Device(db.Model):
 
     @classmethod
     def get(cls, manufacturer: str, name: str, limit: int = 100):
-    '''
-    Gets {limit} devices with the given manufacturer, that match the given name,
-    serializes and then returns them
-    '''
-    if limit > 100:
-        limit = 100
-    devices = None
-    # If 'iPhone' is sent, we want Apple iPhone 12, 11... etc
-    if name:
-        devices = cls.query.filter(Device.name.ilike(
-            r"%{}%".format(name))).limit(limit).all()
-    else:
-        devices = cls.query.limit(limit).all()
-    if manufacturer:
-        return [d.serialize() for d in devices if d.manufacturer.name.lower() == manufacturer.lower()]
-    return [d.serialize() for d in devices]
+        '''
+        Gets {limit} devices with the given manufacturer, that match the given name,
+        serializes and then returns them
+        '''
+        if limit > 100:
+            limit = 100
+        devices = None
+        # If 'iPhone' is sent, we want Apple iPhone 12, 11... etc
+        if name:
+            devices = cls.query.filter(Device.name.ilike(
+                r"%{}%".format(name))).limit(limit).all()
+        else:
+            devices = cls.query.limit(limit).all()
+        if manufacturer:
+            return [d.serialize() for d in devices if d.manufacturer.name.lower() == manufacturer.lower()]
+        return [d.serialize() for d in devices]
 
     @classmethod
     def create(cls, name: str, manufacturer_id: int, url: str) -> 'Device':
