@@ -23,6 +23,7 @@ function searchPage() {
   });
 }
 
-$('#endpoints > div').on('click', function (e) {
-  $(this).find('.card-body').toggle();
+$('div.card-header').on('click', function (e) {
+  const $cardBody = $($(this)[0].nextSibling.nextSibling);
+  $cardBody.toggle();
 });

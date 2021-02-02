@@ -7,6 +7,7 @@
 {% block content %}
 
 <!-- Modals -->
+<!-- GET Manufacturers Modal -->
 <div class="modal fade" id="get-manuf-example" tabindex="-1" aria-labelledby="get-manuf-example-label"
     aria-hidden="true">
     <div class="modal-dialog">
@@ -18,7 +19,27 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <img src="/static/img/get-manuf-example.jpg" alt="Example of GET Manufacturers">
+                <img class="img-fluid" src="/static/img/get-manuf-example.jpg" alt="Example of GET Manufacturers">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- GET Devices Modal -->
+<div class="modal fade" id="get-devices-example" tabindex="-1" aria-labelledby="get-devices-example-label"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-center" id="get-devices-example-label">Example of response from
+                    /api/get-devices
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img class="img-fluid" src="/static/img/get-devices-example.jpg" alt="Example of GET Devices">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -34,7 +55,7 @@
     <div class="col-12 col-md-3 bg-light" id="endpoints">
         <p class="lead m-3 text-center">Endpoints</p>
 
-        <div class="card bg-secondary text-light my-2" id="get-manufacturers-card">
+        <div class="card bg-secondary text-light my-5" id="get-manufacturers-card">
             <div class="card-header text-center bg-light m-0 p-0">
                 <p class="text-dark lead"><span class="text-success">GET</span> /api/get-manufacturers</p>
             </div>
@@ -56,9 +77,9 @@
             </div>
         </div>
 
-        <div class="card bg-secondary text-light my-2" id="get-phones-card">
+        <div class="card bg-secondary text-light my-5" id="get-devices-card">
             <div class="card-header text-center bg-light m-0 p-0">
-                <p class="text-dark lead"><span class="text-success">GET</span> /api/get-phones</p>
+                <p class="text-dark lead"><span class="text-success">GET</span> /api/get-devices</p>
             </div>
             <div class="card-body p-0">
                 <ul class="m-0">Requirements:
@@ -71,9 +92,11 @@
                     <li>Manufacturer (Limit results to devices made by "manufacturer")</li>
                 </ul>
                 <br>
-                <ul>Example Response
-                    <li><img src="" alt="Example of GET Phones"></li>
-                </ul>
+                <!-- Modal Trigger -->
+                <div class="text-center">
+                    <button class="btn btn-outline-light mb-1" data-bs-toggle="modal"
+                        data-bs-target="#get-devices-example">Example Response</button>
+                </div>
             </div>
         </div>
     </div>
