@@ -143,26 +143,6 @@ def get_manufacturers():
 # Device Routes
 #####################################################################
 
-# Might add additional sorting options later
-
-def get_serialized_devices(manufacturer: str, name: str, limit: str):
-    '''
-    Gets {limit} devices with the given manufacturer, that match the given name,
-    serializes and then returns them
-    '''
-    limit = int(limit)
-    devices = None
-    # If 'iPhone' is sent, we want Apple iPhone 12, 11... etc
-    if name:
-        devices = Device.query.filter(Device.name.ilike(
-            r"%{}%".format(name))).limit(limit).all()
-    else:
-        devices = Device.query.limit(limit).all()
-    if manufacturer:
-        return [d.serialize() for d in devices if p.manufacturer.name.lower() == manufacturer.lower()]
-    return [d.serialize() for d in devices]
-
-
 def is_manuf_name_valid(name):
     '''
     Checks if the given name matches the name
@@ -189,11 +169,11 @@ def get_devices():
         limit = 100
     if not is_limit_convertable(limit):
         return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
+    limit = int(limit)
     if manufacturer and not is_manuf_name_valid(name=manufacturer):
         return (jsonify({'message': f'Manufacturer {manufacturer} invalid!'}), 400)
     else:
-        devices = get_serialized_devices(
-            manufacturer=manufacturer, name=name, limit=limit)
+        devices = Device.get(manufacturer=manufacturer, name=name, limit=limit)
         return (jsonify({'Devices': devices}), 200)
 
 #####################################################################

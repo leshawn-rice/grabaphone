@@ -279,6 +279,25 @@ class Device(db.Model):
         return specs
 
     @classmethod
+    def get(cls, manufacturer: str, name: str, limit: int = 100):
+    '''
+    Gets {limit} devices with the given manufacturer, that match the given name,
+    serializes and then returns them
+    '''
+    if limit > 100:
+        limit = 100
+    devices = None
+    # If 'iPhone' is sent, we want Apple iPhone 12, 11... etc
+    if name:
+        devices = cls.query.filter(Device.name.ilike(
+            r"%{}%".format(name))).limit(limit).all()
+    else:
+        devices = cls.query.limit(limit).all()
+    if manufacturer:
+        return [d.serialize() for d in devices if d.manufacturer.name.lower() == manufacturer.lower()]
+    return [d.serialize() for d in devices]
+
+    @classmethod
     def create(cls, name: str, manufacturer_id: int, url: str) -> 'Device':
         device = cls(manufacturer_id=manufacturer_id, name=name, url=url)
         db.session.add(device)
