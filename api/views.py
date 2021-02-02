@@ -12,11 +12,10 @@ import json
 MASTERKEY = os.environ.get('MASTER_KEY', 'masterkey')
 
 # TODO
-# 3. Add ability to update & delete manufs/devices
-# 4. Add UI (almost done)
-# 5. Add tests
-# 6. Document
-# 7. Deploy
+# 1. Finish UI (almost done)
+# 2. Add tests
+# 3. Document
+# 4. Deploy
 
 #######################
 #  Custom Decorators  #
