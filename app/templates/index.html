@@ -162,13 +162,13 @@
             <!-- Requests -->
             <div class="col-6 border border-dark bg-light">
                 <div class="">
-                    <div class="">
+                    <form id="example-request-form">
                         <div class="form-group text-center">
                             <label class="form-label h5" for="route">Route: </label>
                             <select class="form-control" name="route" id="route">
                                 <option value="get-manufacturers">/api/get-manufacturers</option>
                                 <option value="get-devices">/api/get-devices</option>
-                                <option value="get-latest-devices">/api/get-latest-device</option>
+                                <option value="get-latest-devices">/api/get-latest-devices</option>
                             </select>
                         </div>
                         <p class="form-label h5 text-center my-1">Optional Arguments </p>
@@ -176,25 +176,29 @@
                         <div class="form-group mx-1">
                             <div class="form-check" id="manuf-name-check">
                                 <input class="form-check-input" type="checkbox" id="manufacturer-name"
-                                    value="manufacturer">
+                                    name="manufacturer" value="manufacturer">
                                 <label class="form-check-label" for="manufacturer">Manufacturer Name</label>
                             </div>
                             <div class="form-check" id="device-name-check" style="display: none;">
-                                <input class="form-check-input" type="checkbox" id="device-name" value="device">
+                                <input class="form-check-input" type="checkbox" id="device-name" name="device"
+                                    value="device">
                                 <label class="form-check-label" for="device">Device Name</label>
                             </div>
                             <div class="form-check" id="limit-check">
-                                <input class="form-check-input" type="checkbox" id="limit" value="limit">
+                                <input class="form-check-input" type="checkbox" id="limit" name="limit" value="limit">
                                 <label class="form-check-label" for="limit">Limit</label>
                             </div>
                             <div class="form-check" id="is-released-check" style="display: none;">
-                                <input class="form-check-input" type="checkbox" id="is_released" value="is_released">
+                                <input class="form-check-input" type="checkbox" id="is_released" name="is_released"
+                                    value="is_released">
                                 <label class="form-check-label" for="is_released">Is
                                     Released</label>
                             </div>
                         </div>
-                        <br><br>
-                    </div>
+                        <div class="text-center">
+                            <button class="btn btn-outline-dark">Submit!</button>
+                        </div>
+                    </form>
                 </div>
             </div>
             <!-- End Requests -->

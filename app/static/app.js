@@ -49,3 +49,8 @@ $('#route').on('change', function (e) {
     $('#is-released-check').show();
   }
 });
+
+$('#example-request-form').on('submit', function (e) {
+  e.preventDefault();
+  console.log('Submitted form');
+});
