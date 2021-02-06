@@ -27,3 +27,25 @@ $('div.card-header').on('click', function (e) {
   const $cardBody = $($(this)[0].nextSibling.nextSibling);
   $cardBody.toggle();
 });
+
+$('#route').on('change', function (e) {
+  let selected = $(this).val();
+  if (selected === 'get-devices') {
+    $('#manuf-name-check').show();
+    $('#limit-check').show();
+    $('#device-name-check').show();
+    $('#is-released-check').hide();
+  }
+  if (selected === 'get-manufacturers') {
+    $('#manuf-name-check').show();
+    $('#limit-check').show();
+    $('#device-name-check').hide();
+    $('#is-released-check').hide();
+  }
+  if (selected === 'get-latest-devices') {
+    $('#manuf-name-check').show();
+    $('#limit-check').hide();
+    $('#device-name-check').show();
+    $('#is-released-check').show();
+  }
+});

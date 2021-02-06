@@ -26,7 +26,7 @@ def convert_to_date(date_str):
     return date
 
 
-def make_date_valid(self, date_str):
+def make_date_valid(date_str):
     if '(Official)' in date_str:
         date_str = date_str.replace('(Official)', '')
         date_str = date_str.strip()

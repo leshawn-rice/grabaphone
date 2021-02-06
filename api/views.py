@@ -88,6 +88,17 @@ def generate_api_key():
 #####################################################################
 
 
+def is_manuf_name_valid(name):
+    '''
+    Checks if the given name matches the name
+    of any manufacturers in the DB
+    '''
+    manuf = Manufacturer.query.filter_by(name=name).first()
+    if manuf:
+        return True
+    return False
+
+
 def is_limit_convertable(limit: str = None):
     '''
     Takes a string value for limit,
@@ -109,15 +120,17 @@ def get_manufacturers():
     '''Get manufacturers'''
     # Add offset
     data = request.args
-    name = data.get('name')
+    manufacturer = data.get('manufacturer')
     limit = data.get('limit')
 
+    if manufacturer and not is_manuf_name_valid(name=manufacturer):
+        return (jsonify({'message': f'Manufacturer name {manufacturer} invalid!'}), 400)
     if not limit:
         limit = 100
     if not is_limit_convertable(limit):
         return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
     limit = int(limit)
-    manufacturers = Manufacturer.get(name=name, limit=limit)
+    manufacturers = Manufacturer.get(manufacturer=manufacturer, limit=limit)
     return (jsonify({'Manufacturers': manufacturers}), 200)
 
 #####################################################################
@@ -125,17 +138,6 @@ def get_manufacturers():
 
 # Device Routes
 #####################################################################
-
-def is_manuf_name_valid(name):
-    '''
-    Checks if the given name matches the name
-    of any manufacturers in the DB
-    '''
-    manuf = Manufacturer.query.filter_by(name=name).first()
-    if manuf:
-        return True
-    return False
-
 
 @app.route('/api/get-latest-devices')
 @api_key_required

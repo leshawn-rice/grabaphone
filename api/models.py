@@ -129,7 +129,7 @@ class Manufacturer(db.Model):
         return devices
 
     @classmethod
-    def get(cls, name: str = None, limit: int = 100):
+    def get(cls, manufacturer: str = None, limit: int = 100):
         '''
         Gets the manufacturers with the given name and/or all up
         to the limit (defaults to 100) and returns them
@@ -138,8 +138,8 @@ class Manufacturer(db.Model):
             limit = 100
 
         manufs = None
-        if name:
-            manufs = cls.query.filter_by(name=name).limit(limit).all()
+        if manufacturer:
+            manufs = cls.query.filter_by(name=manufacturer).limit(limit).all()
         else:
             manufs = cls.query.limit(limit).all()
         serialized_manufs = [m.serialize() for m in manufs]
@@ -310,14 +310,9 @@ class Device(db.Model):
                 description = " ".join(str(spec.td.text).split())
                 if 'Availability' in category:
                     if not self.release_date or not len(self.release_date) > 4:
-                        print(
-                            f'Adding Release Date {description} to {self.name}')
                         # This should make sorting by release date 1000x easier
                         valid_date = make_date_valid(description)
                         self.release_date = valid_date
-                        print(
-                            f'Added Release Date {valid_date} to {self.name}'
-                        )
                         print(f'{self.name} Released: {self.release_date}')
                 else:
                     new_spec = Spec.create(
@@ -408,7 +403,6 @@ class Spec(db.Model):
 
     def serialize(self):
         return {
-            'id': self.id,
             'name': self.name,
             'description': self.description
         }
