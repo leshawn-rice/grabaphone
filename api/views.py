@@ -7,6 +7,7 @@ from typing import List
 from functools import wraps
 import os
 import json
+from datetime import datetime
 
 
 MASTERKEY = os.environ.get('MASTER_KEY', 'masterkey')
@@ -22,7 +23,6 @@ MASTERKEY = os.environ.get('MASTER_KEY', 'masterkey')
 #######################
 
 #####################################################################
-# Not sure if abort is the best way to go about sending the error back
 
 
 def api_key_required(f):
@@ -137,6 +137,27 @@ def is_manuf_name_valid(name):
     return False
 
 
+@app.route('/api/get-latest-devices')
+@api_key_required
+def get_latest_devices():
+    '''
+    Get latest devices
+    '''
+    data = request.args
+    manufacturer = data.get('manufacturer')
+    name = data.get('name')
+    # Only sent if you want is_released
+    is_released = data.get('is_released')
+
+    is_released = bool(is_released)
+    if manufacturer and not is_manuf_name_valid(name=manufacturer):
+        return (jsonify({'message': f'Manufacturer {manufacturer} invalid!'}), 400)
+    else:
+        devices = Device.get_latest(
+            manufacturer=manufacturer, name=name, is_released=is_released)
+        return (jsonify({'Devices': devices}), 200)
+
+
 @app.route('/api/get-devices', methods=['GET'])
 @api_key_required
 def get_devices():
@@ -229,6 +250,8 @@ def add_specs(id):
         return (jsonify({'message': f'Device ID {id} invalid!'}), 400)
 
     specs = device.scrape_specs()
+
+    db.session.commit()
 
     return (jsonify({'Device': device.serialize()}), 200)
 

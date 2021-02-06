@@ -2,7 +2,9 @@ import requests
 import os
 from bs4 import BeautifulSoup as bsoup
 from typing import List
+from datetime import datetime, date
 from app.database import db
+from api.helpers import convert_to_date, make_date_valid
 
 
 ###################
@@ -193,11 +195,16 @@ class Device(db.Model):
     '''Device Model'''
     __tablename__ = 'devices'
 
+    # Add release date, as date
+    # Because we gotta query this dumbass fucking bullshit
+    # and i wanna kms
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     manufacturer_id = db.Column(db.Integer, db.ForeignKey(
         'manufacturers.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Float)
+    release_date = db.Column(db.Text)
     image = db.Column(db.Text)
     url = db.Column(db.Text, nullable=False)
 
@@ -229,8 +236,10 @@ class Device(db.Model):
         '''
         return {
             'id': self.id,
+            'manufacturer': self.manufacturer.name,
             'name': self.name,
             'rating': self.rating,
+            'release_date': self.release_date,
             'image_url': self.image,
             'device_url': self.url,
 
@@ -299,10 +308,51 @@ class Device(db.Model):
             for spec in specs_:
                 name = " ".join(str(spec.th.text).split())
                 description = " ".join(str(spec.td.text).split())
-                new_spec = Spec.create(
-                    device_id=self.id, category=category, name=name, description=description)
-                specs.append(new_spec)
+                if 'Availability' in category:
+                    if not self.release_date or not len(self.release_date) > 4:
+                        print(
+                            f'Adding Release Date {description} to {self.name}')
+                        # This should make sorting by release date 1000x easier
+                        valid_date = make_date_valid(description)
+                        self.release_date = valid_date
+                        print(
+                            f'Added Release Date {valid_date} to {self.name}'
+                        )
+                        print(f'{self.name} Released: {self.release_date}')
+                else:
+                    new_spec = Spec.create(
+                        device_id=self.id, category=category, name=name, description=description)
+                    specs.append(new_spec)
         return specs
+
+    @classmethod
+    def get_latest(cls, manufacturer, name, is_released: bool = False):
+        '''
+        Gets 100 latest devices with the given manufacturer, that match the given name,
+        serializes and then returns them
+        '''
+        devices = None
+        if name:
+            devices = cls.query.filter(Device.name.ilike(
+                r"%{}%".format(name))).all()
+        else:
+            devices = cls.query.all()
+
+        if manufacturer:
+            devices = [
+                device for device in devices if device.manufacturer.name.lower() == manufacturer.lower()
+            ]
+
+        device_dates = [
+            (device, convert_to_date(device.release_date)) for device in devices
+        ]
+        # Sort devices by latest
+        device_dates.sort(key=lambda device: device[1])
+        if is_released:
+            device_dates.sort(key=lambda device: device[1] < date.today())
+        device_dates.reverse()
+
+        return [device[0].serialize() for device in device_dates[0:100]]
 
     @classmethod
     def get(cls, manufacturer: str, name: str, limit: int = 100):
@@ -320,8 +370,8 @@ class Device(db.Model):
         else:
             devices = cls.query.limit(limit).all()
         if manufacturer:
-            return [d.serialize() for d in devices if d.manufacturer.name.lower() == manufacturer.lower()]
-        return [d.serialize() for d in devices]
+            return [device.serialize() for device in devices if device.manufacturer.name.lower() == manufacturer.lower()]
+        return [device.serialize() for device in devices]
 
     @classmethod
     def create(cls, name: str, manufacturer_id: int, url: str) -> 'Device':
@@ -362,6 +412,11 @@ class Spec(db.Model):
             'name': self.name,
             'description': self.description
         }
+
+    def convert_date(self):
+        raw_date = datetime.strptime(self.description, '%B %d, %Y')
+        date = raw_date.date()
+        self.description = date
 
     @classmethod
     def create(cls, device_id: int, category: str, name: str, description: str) -> 'Spec':
