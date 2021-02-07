@@ -27,6 +27,10 @@ def check_limit(limit: str = None):
 
 
 def convert_manuf_id(id: str = None):
+    '''
+    Converts id into either an int or None
+    and returns it
+    '''
     try:
         id = int(id)
     except TypeError:
@@ -34,7 +38,11 @@ def convert_manuf_id(id: str = None):
     return id
 
 
-def convert_to_date(date_str):
+def convert_to_date(date_str: str = None):
+    '''
+    Converts phonearena release date strings into
+    datetime dates
+    '''
     raw_date = None
     # If the date is null, we will push it to the back of results by setting to January 1900
     if not date_str:
@@ -59,7 +67,11 @@ def convert_to_date(date_str):
     return date
 
 
-def make_date_valid(date_str):
+def make_date_valid(date_str: str = None):
+    '''
+    Turns invalid phonearena dates into dates that can be converted
+    into datetime dates
+    '''
     if '(Official)' in date_str:
         date_str = date_str.replace('(Official)', '')
         date_str = date_str.strip()
