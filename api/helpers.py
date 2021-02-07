@@ -9,7 +9,6 @@ def check_manuf_name(name: str = None):
     from api.models import Manufacturer
     manuf = Manufacturer.query.all()
     manufs = [m for m in manuf if m.name.lower() == name.lower()]
-    print(manufs)
     if manufs:
         return True
     return False
