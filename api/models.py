@@ -407,11 +407,6 @@ class Spec(db.Model):
             'description': self.description
         }
 
-    def convert_date(self):
-        raw_date = datetime.strptime(self.description, '%B %d, %Y')
-        date = raw_date.date()
-        self.description = date
-
     @classmethod
     def create(cls, device_id: int, category: str, name: str, description: str) -> 'Spec':
         new_spec = cls(device_id=device_id, category=category,
