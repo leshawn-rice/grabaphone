@@ -20,3 +20,8 @@
 #endpoints .card-body {
   display: none
 }
+
+#response-div {
+  overflow: wrap;
+  overflow-wrap: break-word;
+}

@@ -72,7 +72,7 @@
 
 <div class="row" id="content">
     <!-- Endpoints -->
-    <div class="col-12 col-md-3 bg-light" id="endpoints">
+    <div class="col-12 col-md-2 bg-light" id="endpoints">
         <p class="lead m-3 text-center">Endpoints</p>
 
         <div class="card bg-secondary text-light my-5" id="get-manufacturers-card">
@@ -156,7 +156,7 @@
     <!-- End Endpoints -->
 
     <!-- Example API Calls -->
-    <div class="col-12 col-md-9" id="examples">
+    <div class="col-12 col-md-10" id="examples">
         <p class="lead text-dark text-center my-3">Content and example API calls</p>
         <div class="row ms-0">
             <!-- Requests -->
@@ -174,29 +174,34 @@
                         <p class="form-label h5 text-center my-1">Optional Arguments </p>
 
                         <div class="form-group mx-1">
-                            <div class="form-check" id="manuf-name-check">
-                                <input class="form-check-input" type="checkbox" id="manufacturer-name"
-                                    name="manufacturer" value="manufacturer">
-                                <label class="form-check-label" for="manufacturer">Manufacturer Name</label>
+                            <div class="form-group row my-1" id="manuf-name-group">
+                                <label class="col-form-label col-sm-12 col-md-5" for="manufacturer">Manufacturer
+                                    Name</label>
+                                <div class="col-sm-12 col-md-7">
+                                    <input class="form-control" type="text" id="manufacturer-name" name="manufacturer">
+                                </div>
                             </div>
-                            <div class="form-check" id="device-name-check" style="display: none;">
-                                <input class="form-check-input" type="checkbox" id="device-name" name="device"
-                                    value="device">
-                                <label class="form-check-label" for="device">Device Name</label>
+                            <div class="form-group row my-1" id="device-name-group" style="display: none;">
+                                <label class="col-form-label col-sm-12 col-md-5" for="device">Device Name</label>
+                                <div class="col-sm-12 col-md-7">
+                                    <input class="form-control" type="text" id="device-name" name="name">
+                                </div>
                             </div>
-                            <div class="form-check" id="limit-check">
-                                <input class="form-check-input" type="checkbox" id="limit" name="limit" value="limit">
-                                <label class="form-check-label" for="limit">Limit</label>
+                            <div class="form-group row my-1" id="limit-group">
+                                <label class="col-form-label col-sm-12 col-md-5" for="limit">Limit</label>
+                                <div class="col-sm-12 col-md-7">
+                                    <input class="form-control" type="number" id="limit" name="limit" min=1 max=100>
+                                </div>
                             </div>
-                            <div class="form-check" id="is-released-check" style="display: none;">
-                                <input class="form-check-input" type="checkbox" id="is_released" name="is_released"
+                            <div class="form-check my-1" id="is-released-group" style="display: none;">
+                                <input class="form-check-input" type="checkbox" id="is-released" name="is-released"
                                     value="is_released">
                                 <label class="form-check-label" for="is_released">Is
                                     Released</label>
                             </div>
                         </div>
-                        <div class="text-center">
-                            <button class="btn btn-outline-dark">Submit!</button>
+                        <div class="text-center my-2">
+                            <button class="btn btn-outline-dark">Send Request!</button>
                         </div>
                     </form>
                 </div>
@@ -204,17 +209,10 @@
             <!-- End Requests -->
             <!-- Responses -->
             <div class="col-6 border border-dark">
-                <div class="text-center">
+                <div class="">
                     <p class="lead">Response!</p>
-                    <div class="bg-dark">
-                        <p class="text-light">
-                            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aliquam tempora, nihil aut non
-                            quasi tempore delectus laudantium porro cum dolore ex, dolor dignissimos reprehenderit
-                            fugiat error magnam, molestiae eveniet vero. Lorem ipsum, dolor sit amet consectetur
-                            adipisicing elit. Quam nisi, voluptas porro qui, animi fugiat excepturi, sed necessitatibus
-                            natus sapiente sint cumque nesciunt ad sit facere laudantium possimus numquam. Maxime
-                            fuga.
-                        </p>
+                    <div class="bg-dark" id="response-div">
+
                     </div>
                 </div>
             </div>

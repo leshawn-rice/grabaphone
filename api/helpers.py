@@ -1,5 +1,4 @@
 from datetime import datetime
-from api.models import Manufacturer
 
 
 def check_manuf_name(name: str = None):
@@ -7,8 +6,11 @@ def check_manuf_name(name: str = None):
     Checks if the given name matches the name
     of any manufacturers in the DB
     '''
-    manuf = Manufacturer.query.filter_by(name=name).first()
-    if manuf:
+    from api.models import Manufacturer
+    manuf = Manufacturer.query.all()
+    manufs = [m for m in manuf if m.name.lower() == name.lower()]
+    print(manufs)
+    if manufs:
         return True
     return False
 

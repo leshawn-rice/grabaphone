@@ -1,6 +1,7 @@
 import requests
 import os
 from bs4 import BeautifulSoup as bsoup
+from sqlalchemy import func
 from typing import List
 from app.database import db
 from api.helpers import convert_to_date, make_date_valid
@@ -138,7 +139,8 @@ class Manufacturer(db.Model):
 
         manufs = None
         if manufacturer:
-            manufs = cls.query.filter_by(name=manufacturer).limit(limit).all()
+            manufs = cls.query.filter(func.lower(
+                cls.name) == func.lower(manufacturer)).limit(limit).all()
         else:
             manufs = cls.query.limit(limit).all()
         serialized_manufs = [m.serialize() for m in manufs]
