@@ -1,18 +1,17 @@
 from flask import render_template, request, jsonify, abort, make_response
-from sqlalchemy import func
 from app.app import app
 from app.database import db
 from api.models import APIKey, Manufacturer, Device, Spec
 from typing import List
 from functools import wraps
 import os
-import json
 from datetime import datetime
 
 
 MASTERKEY = os.environ.get('MASTER_KEY', 'masterkey')
 
 # TODO
+# add offset to routes
 # 1. Finish UI (almost done)
 # 2. Add tests
 # 3. Document
