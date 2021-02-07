@@ -2,7 +2,6 @@ import requests
 import os
 from bs4 import BeautifulSoup as bsoup
 from typing import List
-from datetime import datetime, date
 from app.database import db
 from api.helpers import convert_to_date, make_date_valid
 
