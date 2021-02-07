@@ -29,6 +29,10 @@ $('div.card-header').on('click', function (e) {
   $cardBody.toggle();
 });
 
+function changeOptions() {
+  console.log('lala');
+}
+
 $('#route').on('change', function (e) {
   let selected = $(this).val();
   if (selected === 'get-devices') {
@@ -80,11 +84,39 @@ function getFilledValues($textInputs, $checkedInputs, $numberInputs) {
   return vals;
 }
 
+function syntaxHighlight(json) {
+  /**
+   * This function was copied from StackOverflow
+   * Poster: user123444555621
+   * Post link: https://stackoverflow.com/questions/4810841/pretty-print-json-using-javascript/7220510#7220510
+   */
+  if (typeof json != 'string') {
+    json = JSON.stringify(json, undefined, 2);
+  }
+  json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+    var cls = 'number';
+    if (/^"/.test(match)) {
+      if (/:$/.test(match)) {
+        cls = 'key';
+      } else {
+        cls = 'string';
+      }
+    } else if (/true|false/.test(match)) {
+      cls = 'boolean';
+    } else if (/null/.test(match)) {
+      cls = 'null';
+    }
+    return '<span class="' + cls + '">' + match + '</span>';
+  });
+}
+
 function putInResponse(data) {
   let response = JSON.stringify(data, null, 2);
+  response = syntaxHighlight(response);
   const $resDiv = $('#response-div');
   $resDiv.empty();
-  const dataPara = $('<pre class="text-light">').text(response);
+  const dataPara = $('<pre class="text-light">').html(response);
   $resDiv.append(dataPara);
 }
 

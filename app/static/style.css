@@ -20,3 +20,33 @@
 #endpoints .card-body {
   display: none
 }
+
+/* The following was copied from user123444555621 on StackOverflow: 
+https://stackoverflow.com/questions/4810841/pretty-print-json-using-javascript/7220510#7220510 */
+
+pre {
+  padding: 5px; 
+  margin: 5px; 
+}
+.string { 
+  color: lightgreen; 
+}
+.number { 
+  color: rgb(255, 149, 62); 
+}
+.boolean { 
+  color: blue; 
+}
+.null { 
+  color: magenta; 
+}
+.key { 
+  color: gold; 
+}
+
+/* The following was copied from Mick Feller on StackOverflow: https://stackoverflow.com/a/49818801/6019578 */
+
+.scroll {
+  max-height: 1000px;
+  overflow-y: auto;
+}
