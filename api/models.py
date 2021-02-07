@@ -195,10 +195,6 @@ class Device(db.Model):
     '''Device Model'''
     __tablename__ = 'devices'
 
-    # Add release date, as date
-    # Because we gotta query this dumbass fucking bullshit
-    # and i wanna kms
-
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     manufacturer_id = db.Column(db.Integer, db.ForeignKey(
         'manufacturers.id', ondelete='CASCADE'), nullable=False)
@@ -370,6 +366,7 @@ class Device(db.Model):
 
     @classmethod
     def create(cls, name: str, manufacturer_id: int, url: str) -> 'Device':
+        '''Create a new Device'''
         device = cls(manufacturer_id=manufacturer_id, name=name, url=url)
         db.session.add(device)
         db.session.commit()
@@ -402,6 +399,7 @@ class Spec(db.Model):
         return f'<Spec #{self.id}: {self.device.name} - {self.name}: {self.description}>'
 
     def serialize(self):
+        '''Returns a JSON serializable version of Spec instance'''
         return {
             'name': self.name,
             'description': self.description
@@ -409,6 +407,7 @@ class Spec(db.Model):
 
     @classmethod
     def create(cls, device_id: int, category: str, name: str, description: str) -> 'Spec':
+        '''Create a new Spec'''
         new_spec = cls(device_id=device_id, category=category,
                        name=name, description=description)
         db.session.add(new_spec)
