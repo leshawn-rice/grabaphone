@@ -2,6 +2,7 @@ from flask import render_template, request, jsonify, abort, make_response
 from app.app import app
 from app.database import db
 from api.models import APIKey, Manufacturer, Device, Spec
+from api.helpers import check_manuf_name, check_limit, convert_manuf_id
 from typing import List
 from functools import wraps
 import os
@@ -87,32 +88,6 @@ def generate_api_key():
 #####################################################################
 
 
-def is_manuf_name_valid(name):
-    '''
-    Checks if the given name matches the name
-    of any manufacturers in the DB
-    '''
-    manuf = Manufacturer.query.filter_by(name=name).first()
-    if manuf:
-        return True
-    return False
-
-
-def is_limit_convertable(limit: str = None):
-    '''
-    Takes a string value for limit,
-    checks if it can be converted to an integer,
-    and returns True/False based on that
-    '''
-    try:
-        limit = int(limit)
-        return True
-    except ValueError:
-        return False
-
-# Name, limit, offset, rating ** (Still need to come up with a pythonic way to rate the manufs)
-
-
 @app.route('/api/get-manufacturers', methods=['GET'])
 @api_key_required
 def get_manufacturers():
@@ -122,11 +97,11 @@ def get_manufacturers():
     manufacturer = data.get('manufacturer')
     limit = data.get('limit')
 
-    if manufacturer and not is_manuf_name_valid(name=manufacturer):
+    if manufacturer and not check_manuf_name(name=manufacturer):
         return (jsonify({'message': f'Manufacturer name {manufacturer} invalid!'}), 400)
     if not limit:
         limit = 100
-    if not is_limit_convertable(limit):
+    if not check_limit(limit):
         return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
     limit = int(limit)
     manufacturers = Manufacturer.get(manufacturer=manufacturer, limit=limit)
@@ -151,7 +126,7 @@ def get_latest_devices():
     is_released = data.get('is_released')
 
     is_released = bool(is_released)
-    if manufacturer and not is_manuf_name_valid(name=manufacturer):
+    if manufacturer and not check_manuf_name(name=manufacturer):
         return (jsonify({'message': f'Manufacturer {manufacturer} invalid!'}), 400)
     else:
         devices = Device.get_latest(
@@ -172,10 +147,10 @@ def get_devices():
 
     if not limit:
         limit = 100
-    if not is_limit_convertable(limit):
+    if not check_limit(limit):
         return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
     limit = int(limit)
-    if manufacturer and not is_manuf_name_valid(name=manufacturer):
+    if manufacturer and not check_manuf_name(name=manufacturer):
         return (jsonify({'message': f'Manufacturer {manufacturer} invalid!'}), 400)
     else:
         devices = Device.get(manufacturer=manufacturer, name=name, limit=limit)
@@ -209,15 +184,6 @@ def add_manufacturers():
 # Device Routes
 #####################################################################
 
-def convert_manuf_id(id: str = None):
-    try:
-        id = int(id)
-    except TypeError:
-        id = None
-    return id
-
-
-# To seed the db, get device data for each manufacturer, then create devices
 
 @app.route('/api/get-device-data', methods=['GET'])
 @api_key_required

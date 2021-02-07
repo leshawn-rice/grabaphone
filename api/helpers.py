@@ -1,4 +1,37 @@
 from datetime import datetime
+from api.models import Manufacturer
+
+
+def check_manuf_name(name: str = None):
+    '''
+    Checks if the given name matches the name
+    of any manufacturers in the DB
+    '''
+    manuf = Manufacturer.query.filter_by(name=name).first()
+    if manuf:
+        return True
+    return False
+
+
+def check_limit(limit: str = None):
+    '''
+    Takes a string value for limit,
+    checks if it can be converted to an integer,
+    and returns True/False based on that
+    '''
+    try:
+        limit = int(limit)
+        return True
+    except ValueError:
+        return False
+
+
+def convert_manuf_id(id: str = None):
+    try:
+        id = int(id)
+    except TypeError:
+        id = None
+    return id
 
 
 def convert_to_date(date_str):
