@@ -71,8 +71,9 @@ class DeviceTestCase(TestCase):
         '''Test that serializing a Device runs correctly'''
         device = Device.create(
             name='test device', url='https://testphone.com', manufacturer_id=1)
-        serialized = self.device.serialize()
+        serialized = device.serialize()
         self.assertEqual(serialized['name'], 'test device')
+        self.assertEqual(serialized['release_date'], None)
         self.assertEqual(serialized['rating'], None)
         self.assertEqual(serialized['image_url'], None)
         self.assertEqual(serialized['device_url'], 'https://testphone.com')
