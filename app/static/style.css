@@ -21,8 +21,12 @@
   display: none
 }
 
-/* The following was copied from user123444555621 on StackOverflow: 
-https://stackoverflow.com/questions/4810841/pretty-print-json-using-javascript/7220510#7220510 */
+/* 
+The following was copied from user123444555621 on StackOverflow: 
+https://stackoverflow.com/questions/4810841/pretty-print-json-using-javascript/7220510#7220510 
+
+Colors were adjusted as needed
+*/
 
 pre {
   padding: 5px; 

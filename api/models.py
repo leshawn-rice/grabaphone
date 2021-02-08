@@ -258,12 +258,12 @@ class Device(db.Model):
                 raw_rating = page.find('a', class_='widgetRating__user').find(
                     'div', class_='score').find_all(text=True, recursive=False)
             except AttributeError:
-                raw_rating = [0.0]
+                raw_rating = [None]
         rating = " ".join(str(raw_rating[0]).split())
         try:
             self.rating = float(rating)
         except ValueError:
-            self.rating = 0.0
+            self.rating = None
         return
 
     def get_image(self, page):
@@ -289,12 +289,18 @@ class Device(db.Model):
         # recently added
         page = bsoup(response.text, 'html.parser')
         if not page:
+            # For testing which urls fail specs so we can see why
+            with open('spec_failed.txt', 'a') as specFile:
+                specFile.write(self.url)
             return []
         self.get_rating(page)
         self.get_image(page)
         try:
             divs = page.find('div', class_='widgetSpecs').find_all('section')
         except AttributeError:
+            # For testing which urls fail specs so we can see why
+            with open('spec_failed.txt', 'a') as specFile:
+                specFile.write(self.url)
             return []
 
         specs = []
@@ -318,11 +324,13 @@ class Device(db.Model):
         return specs
 
     @classmethod
-    def get_latest(cls, manufacturer, name, is_released: bool = False):
+    def get_latest(cls, manufacturer: str = None, name: str = None, limit: int = 100, is_released: bool = False):
         '''
         Gets 100 latest devices with the given manufacturer, that match the given name,
         serializes and then returns them
         '''
+        from datetime import date
+        # Add limit
         devices = None
         if name:
             devices = cls.query.filter(Device.name.ilike(
@@ -344,10 +352,14 @@ class Device(db.Model):
             device_dates.sort(key=lambda device: device[1] < date.today())
         device_dates.reverse()
 
-        return [device[0].serialize() for device in device_dates[0:100]]
+        if limit > 100:
+            limit = 100
+
+        # replace 100 with limit
+        return [device[0].serialize() for device in device_dates[0:limit]]
 
     @classmethod
-    def get(cls, manufacturer: str, name: str, limit: int = 100):
+    def get(cls, manufacturer: str = None, name: str = None, limit: int = 100):
         '''
         Gets {limit} devices with the given manufacturer, that match the given name,
         serializes and then returns them
@@ -358,12 +370,12 @@ class Device(db.Model):
         # If 'iPhone' is sent, we want Apple iPhone 12, 11... etc
         if name:
             devices = cls.query.filter(Device.name.ilike(
-                r"%{}%".format(name))).limit(limit).all()
+                r"%{}%".format(name))).all()
         else:
-            devices = cls.query.limit(limit).all()
+            devices = cls.query.all()
         if manufacturer:
-            return [device.serialize() for device in devices if device.manufacturer.name.lower() == manufacturer.lower()]
-        return [device.serialize() for device in devices]
+            return [device.serialize() for device in devices if device.manufacturer.name.lower() == manufacturer.lower()][0:limit]
+        return [device.serialize() for device in devices][0:limit]
 
     @classmethod
     def create(cls, name: str, manufacturer_id: int, url: str) -> 'Device':
