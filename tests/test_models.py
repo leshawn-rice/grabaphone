@@ -7,12 +7,19 @@ app.config['TESTING'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test-db'
 app.config['SQLALCHEMY_ECHO'] = False
 
-db.drop_all()
-db.create_all()
+
+def add_to_db(item):
+    db.session.add(item)
+    db.session.commit()
 
 
 class APIKeyTestCase(TestCase):
     '''APIKey Test Case'''
+
+    @classmethod
+    def setUpClass(cls):
+        db.drop_all()
+        db.create_all()
 
     def test_validate(self):
         '''Test validation of valid key'''
@@ -49,15 +56,24 @@ class APIKeyTestCase(TestCase):
         self.assertIsInstance(key.id, int)
         self.assertEqual(key, APIKey.query.filter_by(key=key.key).first())
 
+    def tearDown(self):
+        db.session.rollback()
+
 
 class DeviceTestCase(TestCase):
     '''Device Test Case'''
 
+    @classmethod
+    def setUpClass(cls):
+        db.drop_all()
+        db.create_all()
+
     # Test scraping? Cant be done with test data has to be done with real data
 
     def setUp(self):
-        self.manuf = Manufacturer.create(
+        self.manuf = Manufacturer(
             name='test manuf', url='https://testmanuf.com')
+        add_to_db(self.manuf)
 
     def test_creation(self):
         '''Test that creating a new Device is as expected'''
@@ -69,12 +85,22 @@ class DeviceTestCase(TestCase):
 
     def test_serialize(self):
         '''Test that serializing a Device runs correctly'''
-        device = Device.create(
-            name='test device', url='https://testphone.com', manufacturer_id=1)
+        device = Device(name='test device',
+                        url='https://testphone.com', manufacturer_id=self.manuf.id)
+        add_to_db(device)
+
         serialized = device.serialize()
-        self.assertEqual(serialized['name'], 'test device')
-        self.assertEqual(serialized['release_date'], None)
-        self.assertEqual(serialized['rating'], None)
-        self.assertEqual(serialized['image_url'], None)
-        self.assertEqual(serialized['device_url'], 'https://testphone.com')
-        self.assertEqual(serialized['specs'], {})
+        print(serialized)
+        self.assertEqual(serialized, {
+            'id': self.manuf.id,
+            'manufacturer': 'test manuf',
+            'name': 'test device',
+            'release_date': None,
+            'rating': None,
+            'device_url': 'https://testphone.com',
+            'image_url': None,
+            'specs': {}
+        })
+
+    def tearDown(self):
+        db.session.rollback()

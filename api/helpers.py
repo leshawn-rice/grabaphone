@@ -1,4 +1,5 @@
 from datetime import datetime
+from sqlalchemy import func
 
 
 def check_manuf_name(name: str = None):
@@ -7,8 +8,8 @@ def check_manuf_name(name: str = None):
     of any manufacturers in the DB
     '''
     from api.models import Manufacturer
-    manuf = Manufacturer.query.all()
-    manufs = [m for m in manuf if m.name.lower() == name.lower()]
+    manufs = Manufacturer.query.filter(
+        func.lower(Manufacturer.name) == func.lower(name)).all()
     if manufs:
         return True
     return False
