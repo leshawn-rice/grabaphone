@@ -8,6 +8,8 @@ def check_manuf_name(name: str = None):
     of any manufacturers in the DB
     '''
     from api.models import Manufacturer
+    if not type(name) == str:
+        return False
     manufs = Manufacturer.query.filter(
         func.lower(Manufacturer.name) == func.lower(name)).all()
     if manufs:
@@ -21,6 +23,8 @@ def check_limit(limit: str = None):
     checks if it can be converted to an integer,
     and returns True/False based on that
     '''
+    if not limit or not type(limit) == str:
+        return False
     try:
         limit = int(limit)
         return True
