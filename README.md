@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/leshawn-rice/grabaphone.svg?branch=main)](https://travis-ci.com/leshawn-rice/grabaphone)
+
 # Grabaphone is a RESTful API that accepts and responds with JSON.
 
 ## Grabaphone will allow developers to get cellular device data from 5000+ devices!
