@@ -50,38 +50,37 @@ def convert_manuf_id(id: str = None):
     return id
 
 
+def get_formatted_date(date_str, date_format):
+    try:
+        return datetime.strptime(date_str, date_format)
+    except ValueError:
+        return False
+
+
 def convert_to_date(date_str: str = None):
     '''
     Converts phonearena release date strings into
     datetime dates
     '''
-    raw_date = None
     # If the date is null, we will push it to the back of results by setting to January 1900
     if not date_str:
         return datetime.strptime('January 1900', '%B %Y').date()
-    # Phonearena does not have consistent date formatting, so this handles that
-    try:
-        # Jan 21, 2000
-        raw_date = datetime.strptime(date_str, '%b %d, %Y')
-    except ValueError:
-        try:
-            # January 21, 2000
-            raw_date = datetime.strptime(date_str, '%B %d, %Y')
-        except ValueError:
-            try:
-                # January, 2000
-                raw_date = datetime.strptime(date_str, '%B, %Y')
-            except ValueError:
-                try:
-                    # January 2000
-                    raw_date = datetime.strptime(date_str, '%B %Y')
-                except ValueError:
-                    try:
-                        # 2000
-                        raw_date = datetime.strptime(date_str, '%Y')
-                    except ValueError:
-                        # Incomprehensible date, return "null" date
-                        return datetime.strptime('January 1900', '%B %Y').date()
+
+    raw_date = None
+    # Jan 21, 200 | January 21, 2000 | January, 2000 | January 2000 | 2000
+    date_formats = ['%b %d, %Y', '%B %d, %Y', '%B, %Y', '%B %Y', '%Y']
+    date_index = 0
+
+    is_converted = False
+    while not is_converted:
+        if date_index == len(date_formats):
+            is_converted = True
+            return datetime.strptime('January 1900', '%B %Y').date()
+        raw_date = get_formatted_date(date_str, date_formats[date_index])
+        if raw_date:
+            is_converted = True
+        else:
+            date_index += 1
 
     date = raw_date.date()
     return date
