@@ -172,6 +172,22 @@ class ConvertToDateTestCase(TestCase):
         # Regex matches XXXX-XX-XX i.e. 2020-08-21
         self.assertEqual(f'{converted_date}', '1900-01-01')
 
+    def test_invalid_type_int(self):
+        '''Returns January 1900: param of type int'''
+        from datetime import date
+        converted_date = convert_to_date(24)
+        self.assertIsInstance(converted_date, date)
+        # Regex matches XXXX-XX-XX i.e. 2020-08-21
+        self.assertEqual(f'{converted_date}', '1900-01-01')
+
+    def test_invalid_type_bool(self):
+        '''Returns January 1900: param of type boolean'''
+        from datetime import date
+        converted_date = convert_to_date(True)
+        self.assertIsInstance(converted_date, date)
+        # Regex matches XXXX-XX-XX i.e. 2020-08-21
+        self.assertEqual(f'{converted_date}', '1900-01-01')
+
 
 class MakeDateValidTestCase(TestCase):
     '''make_date_valid Test Case'''
