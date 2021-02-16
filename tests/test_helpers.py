@@ -7,8 +7,6 @@ from api.helpers import check_manuf_name, check_limit, convert_manuf_id, convert
 app.config['TESTING'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test-db'
 
-# test
-
 
 def seed_db():
     mock_manufs = {
