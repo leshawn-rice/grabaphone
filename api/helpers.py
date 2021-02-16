@@ -63,7 +63,7 @@ def convert_to_date(date_str: str = None):
     datetime dates
     '''
     # If the date is null, we will push it to the back of results by setting to January 1900
-    if not date_str:
+    if not date_str or not type(date_str) == str:
         return datetime.strptime('January 1900', '%B %Y').date()
 
     raw_date = None
