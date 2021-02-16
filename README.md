@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/leshawn-rice/grabaphone.svg?branch=main)](https://travis-ci.com/leshawn-rice/grabaphone) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://travis-ci.com/leshawn-rice/grabaphone.svg?branch=main)](https://travis-ci.com/leshawn-rice/grabaphone) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![GitHub issues open](https://img.shields.io/github/issues/leshawn-rice/grabaphone)](https://github.com/leshawn-rice/grabaphone/issues)
 
 # Grabaphone is a RESTful API that accepts and responds with JSON.
 
