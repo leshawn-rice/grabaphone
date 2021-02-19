@@ -96,16 +96,13 @@ def get_manufacturers():
     data = request.args
     manufacturer = data.get('manufacturer')
     limit = data.get('limit')
-    print('CHECKING MANUFACTURER NAME')
     if manufacturer and not check_manuf_name(name=manufacturer):
         return (jsonify({'message': f'Manufacturer name {manufacturer} invalid!'}), 400)
-    print('CHECKING LIMIT')
     if not limit:
         limit = 100
     if not check_limit(limit):
         return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
     limit = int(limit)
-    print('GETTING MANUFACTURERS')
     manufacturers = Manufacturer.get(manufacturer=manufacturer, limit=limit)
     return (jsonify({'Manufacturers': manufacturers}), 200)
 

@@ -137,13 +137,20 @@ class Manufacturer(db.Model):
         if limit > 100:
             limit = 100
 
+        print(manufacturer)
+        print(limit)
+
         manufs = None
         if manufacturer:
+            print('FILTERING MANUF BASED ON NAME')
             manufs = cls.query.filter(func.lower(
                 cls.name) == func.lower(manufacturer)).limit(limit).all()
         else:
+            print('GETTING ALL MANUFACTURERS')
             manufs = cls.query.limit(limit).all()
+        print('SERIALIZING MANUFS')
         serialized_manufs = [m.serialize() for m in manufs]
+        print('RETURNING MANUFS')
         return serialized_manufs
 
     @classmethod
