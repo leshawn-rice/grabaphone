@@ -95,8 +95,6 @@ class Manufacturer(db.Model):
             'id': self.id,
             'name': self.name,
             'url': self.url,
-
-            'Devices': [p.serialize() for p in self.devices[0:10]]
         }
 
     def scrape_devices(self):
@@ -143,7 +141,6 @@ class Manufacturer(db.Model):
                 cls.name) == func.lower(manufacturer)).limit(limit).all()
         else:
             manufs = cls.query.limit(limit).all()
-        print('SERIALIZING MANUF')
         serialized_manufs = [m.serialize() for m in manufs]
         return serialized_manufs
 
