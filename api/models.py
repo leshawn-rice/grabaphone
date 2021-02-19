@@ -366,14 +366,14 @@ class Device(db.Model):
         devices = None
 
         if manufacturer and name:
-            devices = cls.query.filter(Device.manufacturer.name.ilike(manufacturer)).filter(
+            devices = cls.query.filter(Device.manufacturer.has(name.ilike(manufacturer))).filter(
                 Device.name.ilike(r"%{}%".format(name))).limit(limit).all()
         elif name:
             devices = cls.query.filter(Device.name.ilike(
                 r"%{}%".format(name))).limit(limit).all()
         elif manufacturer:
             devices = cls.query.filter(
-                Device.manufacturer.name.ilike(manufacturer)).limit(limit).all()
+                Device.manufacturer.has(name.ilike(manufacturer))).limit(limit).all()
         else:
             devices = cls.query.limit(limit).all()
         return [device.serialize() for device in devices]
