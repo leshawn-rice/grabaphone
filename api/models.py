@@ -365,17 +365,35 @@ class Device(db.Model):
         if limit > 100:
             limit = 100
         devices = None
-        # If 'iPhone' is sent, we want Apple iPhone 12, 11... etc
-        if name:
-            devices = cls.query.filter(Device.name.ilike(
-                r"%{}%".format(name))).all()
+
+        if manufacturer and name:
+            print('GETTING BY MANUF & NAME')
+            devices = cls.query
+            .filter(
+                Device.manufacturer.name.ilike(manufacturer))
+            .filter(
+                Device.name.ilike(r"%{}%".format(name)))
+            .limit(limit)
+            .all()
+        else if name:
+            print('GETTING BY NAME')
+            devices = cls.query
+            .filter(
+                Device.name.ilike(r"%{}%".format(name)))
+            .limit(limit)
+            .all()
+        else if manufacturer:
+            print('GETTING BY MANUF')
+            devices = cls.query.
+            filter(
+                Device.manufacturer.name.ilike(manufacturer))
+            .limit(limit)
+            .all()
         else:
-            print('GETTING ALL DEVICES')
-            devices = cls.query.all()
-        if manufacturer:
-            print('GETTING MANUG DEVICES')
-            return [device.serialize() for device in devices if device.manufacturer.name.lower() == manufacturer.lower()][0:limit]
-        return [device.serialize() for device in devices[0:limit]]
+            print('GETTING TOP LIMIT')
+            devices = cls.query.limit(limit).all()
+        print('RETURNING DEVICES')
+        return [device.serialize() for device in devices]
 
     @classmethod
     def create(cls, name: str, manufacturer_id: int, url: str) -> 'Device':
