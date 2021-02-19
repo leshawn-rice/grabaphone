@@ -176,11 +176,16 @@ def get_devices():
 def add_manufacturers():
     data = request.json
     Manufacturer.create_all()
-
     if Manufacturer.query.all():
-        return (jsonify({'Manufacturers': [m.serialize() for m in Manufacturer.query.all()]}), 200)
+        response = jsonify(
+            {'Manufacturers': [m.serialize() for m in Manufacturer.query.all()]})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return (response, 200)
     else:
-        return (jsonify({'message': 'Error adding manufacturers!'}), 400)
+        response = jsonify({'message': 'Error adding manufacturers!'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return (response, 400)
+
 
 #####################################################################
 
@@ -196,18 +201,25 @@ def get_raw_device_data():
     data = request.args
     name = data.get('name')
     if not name:
-        return (jsonify({'message': 'You must proved a manufacturers name!'}), 400)
+        response = jsonify(
+            {'message': 'You must proved a manufacturers name!'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return (response, 400)
 
     manuf = Manufacturer.query.filter(Manufacturer.name.ilike(name)).first()
 
     if not manuf:
-        return (jsonify({'message': 'Invalid Manufacturer Name'}), 400)
+        response = jsonify({'message': 'Invalid Manufacturer Name'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return (response, 400)
 
     devices = {}
     devices['id'] = manuf.id
     devices[manuf.name] = manuf.scrape_devices()
 
-    return (jsonify(devices), 200)
+    response = jsonify(devices)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return (response, 200)
 
 
 @app.route('/api/add-specs/<int:id>', methods=['POST'])
@@ -218,13 +230,17 @@ def add_specs(id):
     device = Device.query.get(id)
 
     if not device:
-        return (jsonify({'message': f'Device ID {id} invalid!'}), 400)
+        response = jsonify({'message': f'Device ID {id} invalid!'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return (response, 400)
 
     specs = device.scrape_specs()
 
     db.session.commit()
+    response = jsonify({'Device': device.serialize()})
+    response.headers.add('Access-Control-Allow-Origin', '*')
 
-    return (jsonify({'Device': device.serialize()}), 200)
+    return (response, 200)
 
 
 @app.route('/api/add-device', methods=['POST'])
@@ -238,15 +254,21 @@ def add_device():
     manuf_id = data.get('manuf_id')
 
     if not name or not url or not manuf_id:
-        return (jsonify({'message': 'Invalid Data!'}), 400)
+        response = jsonify({'message': 'Invalid Data!'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return (response, 400)
 
     manuf_id = convert_manuf_id(manuf_id)
     manuf = Manufacturer.query.get(manuf_id)
 
     if manuf:
         device = Device.create(name=name, manufacturer_id=manuf_id, url=url)
-        return (jsonify({'Device': device.serialize()}))
+        response = jsonify({'Device': device.serialize()})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return (response, 200)
     else:
-        return (jsonify({'message': 'Invalid Manufacturer ID!'}), 200)
+        response = jsonify({'message': 'Invalid Manufacturer ID!'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return (response, 200)
 
 #####################################################################
