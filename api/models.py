@@ -366,7 +366,6 @@ class Device(db.Model):
         devices = None
 
         if manufacturer and name:
-            print(Device.manufacturer)
             devices = cls.query.filter(Device.manufacturer.name.ilike(manufacturer)).filter(
                 Device.name.ilike(r"%{}%".format(name))).limit(limit).all()
         elif name:

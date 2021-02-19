@@ -114,7 +114,7 @@ async function getAPIKey() {
 function addLoadingScreen() {
   const $loadingDiv = $('#response-div');
   $loadingDiv.empty();
-  const $loadingIcon = $('<i class="fas fa-cog fa-spin text-light text-center">');
+  const $loadingIcon = $('<i class="fas fa-cog fa-spin text-light">');
   $loadingDiv.append($loadingIcon);
 }
 
