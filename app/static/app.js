@@ -1,60 +1,44 @@
-const masterKey = 'masterkey';
-const apiKey = '583f6187e9a4';
 const searchBar = $('#search-form');
-
-function searchPage() {
-  /*
-   * Searches the current page
-   * for the text inside the search
-   * bar. Then scrolls to it
-   */
-
-  let searchTerm = $('#search-input').val();
-  if (searchTerm.length < 3) {
-    return
-  }
-  $(`*:contains("${searchTerm}")`).each(function () {
-    try {
-      document.getElementById($(this)[0].id).scrollIntoView({ behavior: 'smooth', block: 'center' });
-      $($(`#${$(this)[0].id}`).nextSibling.nextSibling).show();
-    }
-    catch (e) {
-      // ignore elements that have no id
-    }
-  });
-}
 
 $('div.card-header').on('click', function (e) {
   const $cardBody = $($(this)[0].nextSibling.nextSibling);
   $cardBody.toggle();
 });
 
-function changeOptions() {
-  console.log('lala');
+function toggleGetDeviceOptions() {
+  $('#manuf-name-group').show();
+  $('#limit-group').show();
+  $('#device-name-group').show();
+  $('#is-released-group').hide();
+  $('#is-released').prop('checked', false);
+}
+
+function toggleGetManufacturerOptions() {
+  $('#manuf-name-group').show();
+  $('#limit-group').show();
+  $('#device-name-group').hide();
+  $('#device-name').val('');
+  $('#is-released-group').hide();
+  $('#is-released').prop('checked', false);
+}
+
+function toggleGetLatestOptions() {
+  $('#manuf-name-group').show();
+  $('#limit-group').show();
+  $('#device-name-group').show();
+  $('#is-released-group').show();
 }
 
 $('#route').on('change', function (e) {
   let selected = $(this).val();
   if (selected === 'get-devices') {
-    $('#manuf-name-group').show();
-    $('#limit-group').show();
-    $('#device-name-group').show();
-    $('#is-released-group').hide();
-    $('#is-released').prop('checked', false);
+    toggleGetDeviceOptions();
   }
   if (selected === 'get-manufacturers') {
-    $('#manuf-name-group').show();
-    $('#limit-group').show();
-    $('#device-name-group').hide();
-    $('#device-name').val('');
-    $('#is-released-group').hide();
-    $('#is-released').prop('checked', false);
+    toggleGetManufacturerOptions();
   }
   if (selected === 'get-latest-devices') {
-    $('#manuf-name-group').show();
-    $('#limit-group').show();
-    $('#device-name-group').show();
-    $('#is-released-group').show();
+    toggleGetLatestOptions();
   }
 });
 
@@ -120,16 +104,21 @@ function putInResponse(data) {
   $resDiv.append(dataPara);
 }
 
+async function getAPIKey() {
+  const result = await axios.get('/generate-api-key');
+  const $page = $(result.data)
+  const key = $page.find('strong').text();
+  return key;
+}
+
 $('#example-request-form').on('submit', async function (e) {
   e.preventDefault();
   const $route = $('#example-request-form option:selected').val();
   const $textInputs = $('#example-request-form :input[type=text]');
   const $checkedInputs = $('#example-request-form :input:checked');
   const $numberInputs = $('#example-request-form :input[type=number]');
-  const key = 'ec855735d0da';
+  const key = await getApiKey();
   data = { key };
-
-  console.log($route);
 
   const vals = getFilledValues($textInputs, $checkedInputs, $numberInputs);
 
@@ -138,18 +127,10 @@ $('#example-request-form').on('submit', async function (e) {
   }
 
   try {
-    console.log(`/api/${$route}`);
     const res = await axios.get(`/api/${$route}`, { params: data })
-    console.log(res)
-
     putInResponse(res.data);
   }
   catch (err) {
-    console.log(err.response.data);
     putInResponse(err.response.data);
   }
-
-
-
-
 });
