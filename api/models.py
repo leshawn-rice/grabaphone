@@ -91,10 +91,6 @@ class Manufacturer(db.Model):
         information, and a list of their devices, for converting
         to JSON
         '''
-        print(self.id)
-        print(self.name)
-        print(self.url)
-        print(self.devices)
         return {
             'id': self.id,
             'name': self.name,
@@ -148,7 +144,6 @@ class Manufacturer(db.Model):
         else:
             manufs = cls.query.limit(limit).all()
         serialized_manufs = [m.serialize() for m in manufs]
-        print('RETURNING MANUFS')
         return serialized_manufs
 
     @classmethod
@@ -375,10 +370,12 @@ class Device(db.Model):
             devices = cls.query.filter(Device.name.ilike(
                 r"%{}%".format(name))).all()
         else:
+            print('GETTING ALL DEVICES')
             devices = cls.query.all()
         if manufacturer:
+            print('GETTING MANUG DEVICES')
             return [device.serialize() for device in devices if device.manufacturer.name.lower() == manufacturer.lower()][0:limit]
-        return [device.serialize() for device in devices][0:limit]
+        return [device.serialize() for device in devices[0:limit]]
 
     @classmethod
     def create(cls, name: str, manufacturer_id: int, url: str) -> 'Device':
