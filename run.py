@@ -3,8 +3,6 @@ from app.app import app
 from api import views
 from app.database import db
 
-db.create_all()
-
 
 @app.route('/')
 def index():
