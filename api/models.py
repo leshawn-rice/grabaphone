@@ -368,27 +368,16 @@ class Device(db.Model):
 
         if manufacturer and name:
             print('GETTING BY MANUF & NAME')
-            devices = cls.query
-            .filter(
-                Device.manufacturer.name.ilike(manufacturer))
-            .filter(
-                Device.name.ilike(r"%{}%".format(name)))
-            .limit(limit)
-            .all()
+            devices = cls.query.filter(Device.manufacturer.name.ilike(manufacturer)).filter(
+                Device.name.ilike(r"%{}%".format(name))).limit(limit).all()
         else if name:
             print('GETTING BY NAME')
-            devices = cls.query
-            .filter(
-                Device.name.ilike(r"%{}%".format(name)))
-            .limit(limit)
-            .all()
+            devices = cls.query.filter(Device.name.ilike(
+                r"%{}%".format(name))).limit(limit).all()
         else if manufacturer:
             print('GETTING BY MANUF')
-            devices = cls.query.
-            filter(
-                Device.manufacturer.name.ilike(manufacturer))
-            .limit(limit)
-            .all()
+            devices = cls.query.filter(
+                Device.manufacturer.name.ilike(manufacturer)).limit(limit).all()
         else:
             print('GETTING TOP LIMIT')
             devices = cls.query.limit(limit).all()
