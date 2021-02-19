@@ -117,7 +117,7 @@ $('#example-request-form').on('submit', async function (e) {
   const $textInputs = $('#example-request-form :input[type=text]');
   const $checkedInputs = $('#example-request-form :input:checked');
   const $numberInputs = $('#example-request-form :input[type=number]');
-  const key = await getApiKey();
+  const key = await getAPIKey();
   data = { key };
 
   const vals = getFilledValues($textInputs, $checkedInputs, $numberInputs);
