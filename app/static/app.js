@@ -126,8 +126,10 @@ $('#example-request-form').on('submit', async function (e) {
   const $textInputs = $('#example-request-form :input[type=text]');
   const $checkedInputs = $('#example-request-form :input:checked');
   const $numberInputs = $('#example-request-form :input[type=number]');
-  const key = '111a99761fdb';
+  const key = 'ec855735d0da';
   data = { key };
+
+  console.log($route);
 
   const vals = getFilledValues($textInputs, $checkedInputs, $numberInputs);
 
@@ -136,12 +138,15 @@ $('#example-request-form').on('submit', async function (e) {
   }
 
   try {
+    console.log(`/api/${$route}`);
     const res = await axios.get(`/api/${$route}`, { params: data })
-    console.log(res);
+    console.log(res)
+
     putInResponse(res.data);
   }
   catch (err) {
-    putInResponse(err.data);
+    console.log(err.response.data);
+    putInResponse(err.response.data);
   }
 
 

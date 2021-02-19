@@ -51,6 +51,8 @@ pre {
 /* The following was copied from Mick Feller on StackOverflow: https://stackoverflow.com/a/49818801/6019578 */
 
 .scroll {
-  max-height: 1000px;
+  max-height: 500px;
   overflow-y: auto;
+  overflow-x: wrap;
+  overflow-wrap: normal;
 }

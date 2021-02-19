@@ -126,9 +126,10 @@ def get_latest_devices():
     # Only sent if you want is_released
     is_released = data.get('is_released')
     is_released = bool(is_released)
-    if not check_limit(limit):
+    if limit and not check_limit(limit):
         return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
-    limit = int(limit)
+    if limit:
+        limit = int(limit)
     if manufacturer and not check_manuf_name(name=manufacturer):
         return (jsonify({'message': f'Manufacturer {manufacturer} invalid!'}), 400)
     else:

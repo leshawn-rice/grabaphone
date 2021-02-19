@@ -330,7 +330,6 @@ class Device(db.Model):
         serializes and then returns them
         '''
         from datetime import date
-        # Add limit
         devices = None
         if name:
             devices = cls.query.filter(Device.name.ilike(
@@ -352,10 +351,9 @@ class Device(db.Model):
             device_dates.sort(key=lambda device: device[1] < date.today())
         device_dates.reverse()
 
-        if limit > 100:
+        if not limit or limit > 100:
             limit = 100
 
-        # replace 100 with limit
         return [device[0].serialize() for device in device_dates[0:limit]]
 
     @classmethod
