@@ -100,7 +100,7 @@ class Manufacturer(db.Model):
             'name': self.name,
             'url': self.url,
 
-            'Devices': [p.serialize() for p in self.devices]
+            'Devices': [p.serialize() for p in self.devices[0:10]]
         }
 
     def scrape_devices(self):
