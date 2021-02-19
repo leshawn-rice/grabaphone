@@ -112,10 +112,12 @@ async function getAPIKey() {
 }
 
 function addLoadingScreen() {
-  const $loadingDiv = $('#response-div');
+  const $parentDiv = $('#response-div');
   $loadingDiv.empty();
-  const $loadingIcon = $('<i class="fas fa-cog fa-spin text-light d-flex justify-self-center">');
+  const $loadingDiv = $('<div class="text-center">')
+  const $loadingIcon = $('<i class="fas fa-cog fa-spin text-light">');
   $loadingDiv.append($loadingIcon);
+  $parentDiv.append($loadingDiv)
 }
 
 $('#example-request-form').on('submit', async function (e) {
