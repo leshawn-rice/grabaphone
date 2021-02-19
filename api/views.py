@@ -96,6 +96,9 @@ def get_manufacturers():
     data = request.args
     manufacturer = data.get('manufacturer')
     limit = data.get('limit')
+
+    print('STARTING GET MANUFS')
+
     if manufacturer and not check_manuf_name(name=manufacturer):
         return (jsonify({'message': f'Manufacturer name {manufacturer} invalid!'}), 400)
     if not limit:
@@ -103,7 +106,9 @@ def get_manufacturers():
     if not check_limit(limit):
         return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
     limit = int(limit)
+    print('GETTING MANUFS')
     manufacturers = Manufacturer.get(manufacturer=manufacturer, limit=limit)
+    print('RETURNING MANUFS')
     return (jsonify({'Manufacturers': manufacturers}), 200)
 
 #####################################################################
@@ -150,15 +155,12 @@ def get_devices():
 
     if not limit:
         limit = 100
-    print('CHECKING LIMIT')
     if not check_limit(limit):
         return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
     limit = int(limit)
-    print('CHECKING MANUFACTURER')
     if manufacturer and not check_manuf_name(name=manufacturer):
         return (jsonify({'message': f'Manufacturer {manufacturer} invalid!'}), 400)
     else:
-        print('GETTING DEVICES')
         devices = Device.get(manufacturer=manufacturer, name=name, limit=limit)
         return (jsonify({'Devices': devices}), 200)
 

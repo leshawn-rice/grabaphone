@@ -143,6 +143,7 @@ class Manufacturer(db.Model):
                 cls.name) == func.lower(manufacturer)).limit(limit).all()
         else:
             manufs = cls.query.limit(limit).all()
+        print('SERIALIZING MANUF')
         serialized_manufs = [m.serialize() for m in manufs]
         return serialized_manufs
 
