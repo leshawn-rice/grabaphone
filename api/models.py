@@ -370,11 +370,11 @@ class Device(db.Model):
             print('GETTING BY MANUF & NAME')
             devices = cls.query.filter(Device.manufacturer.name.ilike(manufacturer)).filter(
                 Device.name.ilike(r"%{}%".format(name))).limit(limit).all()
-        else if name:
+        elif name:
             print('GETTING BY NAME')
             devices = cls.query.filter(Device.name.ilike(
                 r"%{}%".format(name))).limit(limit).all()
-        else if manufacturer:
+        elif manufacturer:
             print('GETTING BY MANUF')
             devices = cls.query.filter(
                 Device.manufacturer.name.ilike(manufacturer)).limit(limit).all()
