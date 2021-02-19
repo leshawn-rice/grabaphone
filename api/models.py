@@ -201,7 +201,7 @@ class Device(db.Model):
         'manufacturers.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Float)
-    release_date = db.Column(db.Text)
+    release_date = db.Column(db.Date)
     image = db.Column(db.Text)
     url = db.Column(db.Text, nullable=False)
 
@@ -323,6 +323,7 @@ class Device(db.Model):
                     specs.append(new_spec)
         return specs
 
+    # Needs fixing
     @classmethod
     def get_latest(cls, manufacturer: str = None, name: str = None, limit: int = 100, is_released: bool = False):
         '''
@@ -367,21 +368,17 @@ class Device(db.Model):
         devices = None
 
         if manufacturer and name:
-            print('GETTING BY MANUF & NAME')
+            print(Device.manufacturer)
             devices = cls.query.filter(Device.manufacturer.name.ilike(manufacturer)).filter(
                 Device.name.ilike(r"%{}%".format(name))).limit(limit).all()
         elif name:
-            print('GETTING BY NAME')
             devices = cls.query.filter(Device.name.ilike(
                 r"%{}%".format(name))).limit(limit).all()
         elif manufacturer:
-            print('GETTING BY MANUF')
             devices = cls.query.filter(
                 Device.manufacturer.name.ilike(manufacturer)).limit(limit).all()
         else:
-            print('GETTING TOP LIMIT')
             devices = cls.query.limit(limit).all()
-        print('RETURNING DEVICES')
         return [device.serialize() for device in devices]
 
     @classmethod

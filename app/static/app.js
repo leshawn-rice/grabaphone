@@ -111,8 +111,18 @@ async function getAPIKey() {
   return key;
 }
 
+function addLoadingScreen() {
+  const $loadingDiv = $('#response-div');
+  $loadingDiv.empty();
+  const $loadingIcon = $('<i class="fas fa-cog fa-spin">');
+  $loadingDiv.append($loadingIcon);
+}
+
 $('#example-request-form').on('submit', async function (e) {
   e.preventDefault();
+
+  addLoadingScreen();
+
   const $route = $('#example-request-form option:selected').val();
   const $textInputs = $('#example-request-form :input[type=text]');
   const $checkedInputs = $('#example-request-form :input:checked');
