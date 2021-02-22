@@ -84,6 +84,7 @@ def generate_api_key():
 #  User Routes  #
 #################
 
+
 # Manufacturer Routes
 #####################################################################
 
@@ -178,7 +179,6 @@ def get_devices():
 @api_key_required
 @master_key_required
 def add_manufacturers():
-    data = request.json
     Manufacturer.create_all()
     if Manufacturer.query.all():
         response = jsonify(
@@ -230,17 +230,15 @@ def get_raw_device_data():
 @api_key_required
 @master_key_required
 def add_specs(id):
-    data = request.json
     device = Device.query.get(id)
+
+    print('a')
 
     if not device:
         response = jsonify({'message': f'Device ID {id} invalid!'})
         response.headers.add('Access-Control-Allow-Origin', '*')
         return (response, 400)
 
-    specs = device.scrape_specs()
-
-    db.session.commit()
     response = jsonify({'Device': device.serialize()})
     response.headers.add('Access-Control-Allow-Origin', '*')
 

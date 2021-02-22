@@ -319,7 +319,7 @@ class Device(db.Model):
                     new_spec = Spec.create(
                         device_id=self.id, category=category, name=name, description=description)
                     specs.append(new_spec)
-        return specs
+        db.session.commit()
 
     # Needs fixing
     @classmethod
