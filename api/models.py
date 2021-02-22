@@ -280,7 +280,7 @@ class Device(db.Model):
 
     def scrape_specs(self) -> List['Spec']:
         '''
-        Scrapes all the specs for a device from the 
+        Scrapes all the specs for a device from the
         device page and creates the specs for the device
         '''
         response = requests.get(self.url)
@@ -330,30 +330,21 @@ class Device(db.Model):
         '''
         from datetime import date
         devices = None
-        if name:
+
+        if manufacturer and name:
+            devices = cls.query.join(Device.manufacturer, aliased=True).filter(Manufacturer.name.ilike(
+                manufacturer)).filter(Device.name.ilike(fr'%{name}%')).order_by(Device.release_date.desc()).limit(limit).all()
+        elif name:
             devices = cls.query.filter(Device.name.ilike(
-                r"%{}%".format(name))).all()
+                fr'%{name}%')).order_by(Device.release_date.desc()).limit(limit).all()
+        elif manufacturer:
+            devices = cls.query.join(Device.manufacturer, aliased=True).filter(
+                Manufacturer.name.ilike(manufacturer)).order_by(Device.release_date.desc()).limit(limit).all()
         else:
-            devices = cls.query.all()
+            devices = cls.query.order_by(Device.release_date.desc()).order_by(
+                Device.release_date.desc()).limit(limit).all()
 
-        if manufacturer:
-            devices = [
-                device for device in devices if device.manufacturer.name.lower() == manufacturer.lower()
-            ]
-
-        device_dates = [
-            (device, convert_to_date(device.release_date)) for device in devices
-        ]
-        # Sort devices by latest
-        device_dates.sort(key=lambda device: device[1])
-        if is_released:
-            device_dates.sort(key=lambda device: device[1] < date.today())
-        device_dates.reverse()
-
-        if not limit or limit > 100:
-            limit = 100
-
-        return [device[0].serialize() for device in device_dates[0:limit]]
+        return devices
 
     @classmethod
     def get(cls, manufacturer: str = None, name: str = None, limit: int = 100):
@@ -367,10 +358,11 @@ class Device(db.Model):
 
         if manufacturer and name:
             devices = cls.query.join(Device.manufacturer, aliased=True).filter(Manufacturer.name.ilike(
-                manufacturer)).filter(Device.name.ilike(r"%{}%".format(name))).limit(limit).all()
+                manufacturer)).filter(Device.name.ilike(fr'%{name}%')).limit(limit).all()
+
         elif name:
             devices = cls.query.filter(Device.name.ilike(
-                r"%{}%".format(name))).limit(limit).all()
+                fr'%{name}%')).limit(limit).all()
         elif manufacturer:
             devices = cls.query.join(Device.manufacturer, aliased=True).filter(
                 Manufacturer.name.ilike(manufacturer)).limit(limit).all()
@@ -378,7 +370,7 @@ class Device(db.Model):
             devices = cls.query.limit(limit).all()
         return [device.serialize() for device in devices]
 
-    @classmethod
+    @ classmethod
     def create(cls, name: str, manufacturer_id: int, url: str) -> 'Device':
         '''Create a new Device'''
         device = cls(manufacturer_id=manufacturer_id, name=name, url=url)
@@ -419,7 +411,7 @@ class Spec(db.Model):
             'description': self.description
         }
 
-    @classmethod
+    @ classmethod
     def create(cls, device_id: int, category: str, name: str, description: str) -> 'Spec':
         '''Create a new Spec'''
         new_spec = cls(device_id=device_id, category=category,

@@ -1,8 +1,42 @@
 from datetime import datetime
 from sqlalchemy import func
+from api.config import DATE_FORMATS, INVALID_DATE_MAP
 
-# types of acceptable params for helper funcs that check validity of params
-PARAM_TYPES = [int, str]
+
+def convert_limit(limit):
+    if check_limit(limit):
+        return int(limit) if int(limit) <= 100 else 100
+    else:
+        return 100
+
+
+def convert_is_released(is_released):
+    return bool(is_released)
+
+
+def check_device_name(device):
+    if device and type(device) == str:
+        return True
+    else:
+        return False
+
+
+def validate_json(data, valid_params):
+    json_data = {}
+
+    for param in valid_params:
+        param_value = data.get(param)
+        param_validator = JSON_PARAM_FUNCS[param](param_value)
+        if param_value:
+            param_validator = JSON_PARAM_FUNCS[param](param_value)
+            if param_validator:
+                json_data[param] = param_value if param != 'limit' and param != 'is_released' else param_validator
+            else:
+                json_data[param] = None
+        else:
+            json_data[param] = 'not-sent'
+
+    return json_data
 
 
 def check_manuf_name(name: str = None):
@@ -13,9 +47,8 @@ def check_manuf_name(name: str = None):
     from api.models import Manufacturer
     if not type(name) == str:
         return False
-    manufs = Manufacturer.query.filter(
-        func.lower(Manufacturer.name) == func.lower(name)).all()
-    if manufs:
+    is_manufs = Manufacturer.query.filter(Manufacturer.name.ilike(name)).all()
+    if is_manufs:
         return True
     return False
 
@@ -26,7 +59,7 @@ def check_limit(limit: str = None):
     checks if it can be converted to an integer,
     and returns True/False based on that
     '''
-    if not type(limit) in PARAM_TYPES:
+    if type(limit) is not str and type(limit) is not int:
         return False
     try:
         limit = int(limit)
@@ -41,20 +74,13 @@ def convert_manuf_id(id: str = None):
     and returns it
     '''
     # If invalid type, return None
-    if not type(id) in PARAM_TYPES:
+    if type(id) is not str and type(id) is not int:
         return None
     try:
         id = int(id)
     except ValueError:
         id = None
     return id
-
-
-def get_formatted_date(date_str, date_format):
-    try:
-        return datetime.strptime(date_str, date_format)
-    except ValueError:
-        return False
 
 
 def convert_to_date(date_str: str = None):
@@ -67,22 +93,19 @@ def convert_to_date(date_str: str = None):
         return datetime.strptime('January 1900', '%B %Y').date()
 
     raw_date = None
-    # Jan 21, 200 | January 21, 2000 | January, 2000 | January 2000 | 2000
-    date_formats = ['%b %d, %Y', '%B %d, %Y', '%B, %Y', '%B %Y', '%Y']
-    date_index = 0
+    date = None
 
-    is_converted = False
-    while not is_converted:
-        if date_index == len(date_formats):
-            is_converted = True
-            return datetime.strptime('January 1900', '%B %Y').date()
-        raw_date = get_formatted_date(date_str, date_formats[date_index])
-        if raw_date:
-            is_converted = True
-        else:
-            date_index += 1
+    for date_format in DATE_FORMATS:
+        try:
+            raw_date = datetime.strptime(date_str, date_format)
+        except ValueError:
+            continue
 
-    date = raw_date.date()
+    if raw_date:
+        date = raw_date.date()
+    else:
+        date = datetime.strptime('January 1900', '%B %Y').date()
+
     return date
 
 
@@ -94,22 +117,18 @@ def make_date_valid(date_str: str = None):
     if not date_str or type(date_str) != str:
         return None
 
-    if '(Official)' in date_str:
-        date_str = date_str.replace('(Official)', '')
-        date_str = date_str.strip()
+    for invalid_date, valid_date in INVALID_DATE_MAP.items():
+        if invalid_date in date_str:
+            date_str = date_str.replace(invalid_date, valid_date)
 
-    if 'Q1' in date_str:
-        date_str = date_str.replace('Q1', 'January')
-    if 'Q2' in date_str:
-        date_str = date_str.replace('Q2', 'April')
-    if 'Q3' in date_str:
-        date_str = date_str.replace('Q3', 'July')
-    if 'Q4' in date_str:
-        date_str = date_str.replace('Q4', 'October')
-
-    # Used for announced devices but not released
-    if 'Yes' in date_str:
-        # Low effort from phonearena, lower effort from me
-        date_str = 'January 1900'
+    date_str = date_str.strip()
 
     return date_str
+
+
+JSON_PARAM_FUNCS = {
+    'manufacturer': check_manuf_name,
+    'name': check_device_name,
+    'limit': convert_limit,
+    'is_released': convert_is_released
+}

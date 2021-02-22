@@ -2,7 +2,7 @@ from flask import render_template, request, jsonify, abort, make_response
 from app.app import app
 from app.database import db
 from api.models import APIKey, Manufacturer, Device, Spec
-from api.helpers import check_manuf_name, check_limit, convert_manuf_id
+from api.helpers import check_manuf_name, check_limit, convert_manuf_id, validate_json
 from typing import List
 from functools import wraps
 import os
@@ -119,23 +119,27 @@ def get_latest_devices():
     '''
     Get latest devices
     '''
-    data = request.args
-    manufacturer = data.get('manufacturer')
-    name = data.get('name')
-    limit = data.get('limit')
-    # Only sent if you want is_released
-    is_released = data.get('is_released')
-    is_released = bool(is_released)
-    if limit and not check_limit(limit):
-        return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
-    if limit:
-        limit = int(limit)
-    if manufacturer and not check_manuf_name(name=manufacturer):
-        return (jsonify({'message': f'Manufacturer {manufacturer} invalid!'}), 400)
-    else:
-        devices = Device.get_latest(
-            manufacturer=manufacturer, name=name, limit=limit, is_released=is_released)
-        return (jsonify({'Devices': devices}), 200)
+    json_data = validate_json(request.args, ['manufacturer',
+                                             'name', 'limit', 'is_released'])
+
+    for key in json_data.keys():
+        if not json_data[key]:
+            return (jsonify({'message': f'Error! {key} invalid!'}))
+        elif json_data[key] == 'not-sent':
+            if key == 'limit':
+                json_data[key] = 100
+            else:
+                json_data[key] = None
+
+    manufacturer = json_data['manufacturer']
+    name = json_data['name']
+    limit = json_data['limit']
+    is_released = json_data['is_released']
+
+    devices = Device.get_latest(
+        manufacturer=manufacturer, name=name, limit=limit, is_released=is_released)
+    serialized_devices = [device.serialize() for device in devices]
+    return (jsonify({'Devices': serialized_devices}), 200)
 
 
 @app.route('/api/get-devices', methods=['GET'])
