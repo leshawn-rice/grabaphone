@@ -90,7 +90,6 @@ class DeviceTestCase(TestCase):
         add_to_db(device)
 
         serialized = device.serialize()
-        print(serialized)
         self.assertEqual(serialized, {
             'id': self.manuf.id,
             'manufacturer': 'test manuf',
