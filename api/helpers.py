@@ -1,5 +1,7 @@
 from datetime import datetime
 from sqlalchemy import func
+# Should need to be inside app context to abort
+from flask import abort, make_response, jsonify
 from api.config import DATE_FORMATS, INVALID_DATE_MAP
 
 
@@ -19,6 +21,19 @@ def check_device_name(device):
         return True
     else:
         return False
+
+
+def handle_json(json_data):
+    for key in json_data.keys():
+        if not json_data[key]:
+            json_response = jsonify({'message': f'Error! {key} invalid!'})
+            response = make_response(json_response, 400)
+            abort(response)
+        if json_data[key] == 'not-sent':
+            if key == 'limit':
+                json_data[key] = 100
+            else:
+                json_data[key] = None
 
 
 def validate_json(data, valid_params):

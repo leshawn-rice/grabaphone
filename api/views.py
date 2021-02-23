@@ -1,15 +1,12 @@
 from flask import render_template, request, jsonify, abort, make_response
 from app.app import app
 from app.database import db
+from api.config import MASTER_KEY
+# Consider using db.model.ModelName instead of importing models
 from api.models import APIKey, Manufacturer, Device, Spec
-from api.helpers import check_manuf_name, check_limit, convert_manuf_id, validate_json
-from typing import List
+from api.helpers import convert_manuf_id, validate_json, handle_json
 from functools import wraps
-import os
-from datetime import datetime
 
-
-MASTERKEY = os.environ.get('MASTER_KEY', 'masterkey')
 
 # TODO
 # add offset to routes
@@ -36,8 +33,9 @@ def api_key_required(f):
             data = request.json
         key = data.get('key')
         if not APIKey.validate(key):
-            response = make_response(
-                jsonify({'message': 'API Key invalid!', 'status': 401}), 401)
+            json_response = jsonify(
+                {'message': 'API Key invalid!', 'status': 401})
+            response = make_response(json_response, 401)
             abort(response)
         return f(*args, **kwargs)
     return decorated_func
@@ -52,9 +50,10 @@ def master_key_required(f):
             data = request.args
         else:
             data = request.json
-        if data.get('master_key') != MASTERKEY:
-            response = make_response(
-                jsonify({'message': 'Master Key invalid!', 'status': 401}), 401)
+        if data.get('master_key') != MASTER_KEY:
+            json_response = jsonify(
+                {'message': 'Master Key invalid!', 'status': 401})
+            response = make_response(json_response, 401)
             abort(response)
         return f(*args, **kwargs)
     return decorated_func
@@ -94,19 +93,16 @@ def generate_api_key():
 def get_manufacturers():
     '''Get manufacturers'''
     # Add offset
-    data = request.args
-    manufacturer = data.get('manufacturer')
-    limit = data.get('limit')
+    json_data = validate_json(request.args, ['manufacturer', 'limit'])
+    json_data = handle_json(json_data)
 
-    if manufacturer and not check_manuf_name(name=manufacturer):
-        return (jsonify({'message': f'Manufacturer name {manufacturer} invalid!'}), 400)
-    if not limit:
-        limit = 100
-    if not check_limit(limit):
-        return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
-    limit = int(limit)
+    manufacturer = json_data['manufacturer']
+    limit = json_data['limit']
+
     manufacturers = Manufacturer.get(manufacturer=manufacturer, limit=limit)
-    return (jsonify({'Manufacturers': manufacturers}), 200)
+    serialized_manufacturers = [manuf.serialize() for manuf in manufacturers]
+    response = jsonify({'Manufacturers:' manufacturers})
+    return (response, 200)
 
 #####################################################################
 
@@ -122,15 +118,7 @@ def get_latest_devices():
     '''
     json_data = validate_json(request.args, ['manufacturer',
                                              'name', 'limit', 'is_released'])
-
-    for key in json_data.keys():
-        if not json_data[key]:
-            return (jsonify({'message': f'Error! {key} invalid!'}))
-        elif json_data[key] == 'not-sent':
-            if key == 'limit':
-                json_data[key] = 100
-            else:
-                json_data[key] = None
+    json_data = handle_json(json_data)
 
     manufacturer = json_data['manufacturer']
     name = json_data['name']
@@ -140,7 +128,8 @@ def get_latest_devices():
     devices = Device.get_latest(
         manufacturer=manufacturer, name=name, limit=limit, is_released=is_released)
     serialized_devices = [device.serialize() for device in devices]
-    return (jsonify({'Devices': serialized_devices}), 200)
+    response = jsonify({'Devices': serialized_devices})
+    return (response, 200)
 
 
 @app.route('/api/get-devices', methods=['GET'])
@@ -149,21 +138,17 @@ def get_devices():
     '''
     Get devices
     '''
-    data = request.args
-    manufacturer = data.get('manufacturer')
-    name = data.get('name')
-    limit = data.get('limit')
+    json_data = validate_json(request.args, ['manufacturer', 'name', 'limit'])
+    json_data = handle_json(json_data)
 
-    if not limit:
-        limit = 100
-    if not check_limit(limit):
-        return (jsonify({'message': f'Limit {limit} invalid!'}), 400)
-    limit = int(limit)
-    if manufacturer and not check_manuf_name(name=manufacturer):
-        return (jsonify({'message': f'Manufacturer {manufacturer} invalid!'}), 400)
-    else:
-        devices = Device.get(manufacturer=manufacturer, name=name, limit=limit)
-        return (jsonify({'Devices': devices}), 200)
+    manufacturer = json_data['manufacturer']
+    name = json_data['name']
+    limit = json_data['limit']
+
+    devices = Device.get(manufacturer=manufacturer, name=name, limit=limit)
+    serialized_devices = [device.serialize() for device in devices]
+    response = jsonify({'Devices': serialized_devices})
+    return (response, 200)
 
 #####################################################################
 
@@ -231,8 +216,6 @@ def get_raw_device_data():
 @master_key_required
 def add_specs(id):
     device = Device.query.get(id)
-
-    print('a')
 
     if not device:
         response = jsonify({'message': f'Device ID {id} invalid!'})

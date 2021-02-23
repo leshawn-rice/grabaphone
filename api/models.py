@@ -132,17 +132,13 @@ class Manufacturer(db.Model):
         Gets the manufacturers with the given name and/or all up
         to the limit (defaults to 100) and returns them
         '''
-        if limit > 100:
-            limit = 100
-
         manufs = None
         if manufacturer:
-            manufs = cls.query.filter(func.lower(
-                cls.name) == func.lower(manufacturer)).limit(limit).all()
+            manufs = cls.query.filter(cls.name.ilike(
+                manufacturer)).limit(limit).all()
         else:
             manufs = cls.query.limit(limit).all()
-        serialized_manufs = [m.serialize() for m in manufs]
-        return serialized_manufs
+        return manufs
 
     @classmethod
     def create(cls, name: str, url: str) -> 'Manufacturer':
@@ -284,41 +280,41 @@ class Device(db.Model):
         device page and creates the specs for the device
         '''
         response = requests.get(self.url)
-        # recently added
         page = bsoup(response.text, 'html.parser')
         if not page:
             # For testing which urls fail specs so we can see why
             with open('spec_failed.txt', 'a') as specFile:
                 specFile.write(self.url)
-            return []
+            return
+
         self.get_rating(page)
         self.get_image(page)
+
         try:
-            divs = page.find('div', class_='widgetSpecs').find_all('section')
+            spec_groups = page.find(
+                'div', class_='widgetSpecs').find_all('section')
         except AttributeError:
             # For testing which urls fail specs so we can see why
             with open('spec_failed.txt', 'a') as specFile:
                 specFile.write(self.url)
-            return []
+            return
 
-        specs = []
-
-        for spec_group in divs:
-            category = " ".join(str(spec_group.h3.text).split())
-            specs_ = spec_group.tbody.find_all('tr')
-            for spec in specs_:
+        for group in spec_groups:
+            category = " ".join(str(group.h3.text).split())
+            specs = group.tbody.find_all('tr')
+            for spec in specs:
                 name = " ".join(str(spec.th.text).split())
                 description = " ".join(str(spec.td.text).split())
                 if 'Availability' in category:
                     if not self.release_date or not len(self.release_date) > 4:
-                        # This should make sorting by release date 1000x easier
                         valid_date = make_date_valid(description)
                         self.release_date = valid_date
-                        print(f'{self.name} Released: {self.release_date}')
+                elif 'Display' in category and 'Size:' in name:
+                    # Remove " inches" from display size
+                    description = description[:len(description - 7)]
                 else:
                     new_spec = Spec.create(
                         device_id=self.id, category=category, name=name, description=description)
-                    specs.append(new_spec)
         db.session.commit()
 
     # Needs fixing
@@ -352,14 +348,11 @@ class Device(db.Model):
         Gets {limit} devices with the given manufacturer, that match the given name,
         serializes and then returns them
         '''
-        if limit > 100:
-            limit = 100
         devices = None
 
         if manufacturer and name:
             devices = cls.query.join(Device.manufacturer, aliased=True).filter(Manufacturer.name.ilike(
                 manufacturer)).filter(Device.name.ilike(fr'%{name}%')).limit(limit).all()
-
         elif name:
             devices = cls.query.filter(Device.name.ilike(
                 fr'%{name}%')).limit(limit).all()
@@ -368,7 +361,7 @@ class Device(db.Model):
                 Manufacturer.name.ilike(manufacturer)).limit(limit).all()
         else:
             devices = cls.query.limit(limit).all()
-        return [device.serialize() for device in devices]
+        return devices
 
     @ classmethod
     def create(cls, name: str, manufacturer_id: int, url: str) -> 'Device':
