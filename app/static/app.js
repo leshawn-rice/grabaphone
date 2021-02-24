@@ -1,72 +1,81 @@
-const searchBar = $('#search-form');
+
+/*
+* When the user clicks on one of the endpoint cards on the
+* lefthand side of the screen, expand the card body
+*/
 
 $('div.card-header').on('click', function (e) {
   const $cardBody = $($(this)[0].nextSibling.nextSibling);
   $cardBody.toggle();
 });
 
-function toggleGetDeviceOptions() {
-  $('#manuf-name-group').show();
-  $('#limit-group').show();
-  $('#device-name-group').show();
-  $('#is-released-group').hide();
-  $('#is-released').prop('checked', false);
+
+/*
+* Functions to handle example request form options
+*/
+
+function toggleRouteOptions(dataToShow, dataToHide, dataToUncheck, dataToReset) {
+  if (dataToShow && dataToShow.length > 0) {
+    for (let domElement of dataToShow) {
+      domElement.show()
+    }
+  }
+  if (dataToHide && dataToHide.length > 0) {
+    for (let domElement of dataToHide) {
+      domElement.hide()
+    }
+  }
+  if (dataToUncheck) {
+    dataToUncheck.prop('checked', false)
+  }
+  if (dataToReset) {
+    dataToReset.val('')
+  }
 }
 
-function toggleGetManufacturerOptions() {
-  $('#manuf-name-group').show();
-  $('#limit-group').show();
-  $('#device-name-group').hide();
-  $('#device-name').val('');
-  $('#is-released-group').hide();
-  $('#is-released').prop('checked', false);
+function toggleDeviceRoute() {
+  const dataToShow = [$('#manuf-name-group'), $('#limit-group'), $('#device-name-group')];
+  const dataToHide = [$('#is-released-group')];
+  const dataToUncheck = $('#is-released');
+  toggleRouteOptions(dataToShow, dataToHide, dataToUncheck);
 }
 
-function toggleGetLatestOptions() {
-  $('#manuf-name-group').show();
-  $('#limit-group').show();
-  $('#device-name-group').show();
-  $('#is-released-group').show();
+function toggleManufacturerRoute() {
+  const dataToShow = [$('#manuf-name-group'), $('#limit-group')];
+  const dataToHide = [$('#device-name-group'), $('#is-released-group')];
+  const dataToUncheck = $('#is-released');
+  const dataToReset = $('#device-name');
+  toggleRouteOptions(dataToShow, dataToHide, dataToUncheck, dataToReset);
 }
+
+function toggleLatestDeviceRoute() {
+  const dataToShow = [$('#manuf-name-group'), $('#limit-group'), $('#device-name-group'), $('#is-released-group')];
+  toggleRouteOptions(dataToShow);
+}
+
+/*
+* When the user changes the route in the 
+* example request form, update the options
+* to the available query params for that route
+*/
 
 $('#route').on('change', function (e) {
   let selected = $(this).val();
   if (selected === 'get-devices') {
-    toggleGetDeviceOptions();
+    toggleDeviceRoute();
   }
   if (selected === 'get-manufacturers') {
-    toggleGetManufacturerOptions();
+    toggleManufacturerRoute();
   }
   if (selected === 'get-latest-devices') {
-    toggleGetLatestOptions();
+    toggleLatestDeviceRoute();
   }
 });
 
-function getFilledValues($textInputs, $checkedInputs, $numberInputs) {
-  const vals = []
-
-  for (let input of $textInputs) {
-    if (!($(input).val() === '')) {
-      const name = $(input).attr('name');
-      const value = $(input).val();
-      vals.push({ name, value });
-    }
-  }
-  for (let input of $checkedInputs) {
-    const name = $(input).attr('name');
-    const value = $(input).val();
-    vals.push({ name, value });
-  }
-  for (let input of $numberInputs) {
-    if (!($(input).val() === '')) {
-      const name = $(input).attr('name');
-      const value = $(input).val();
-      vals.push({ name, value });
-    }
-  }
-
-  return vals;
-}
+/*
+* Handle changing the DOM to reflect example
+* requests/responses 
+*/
 
 function syntaxHighlight(json) {
   /**
@@ -104,13 +113,6 @@ function putInResponse(data) {
   $resDiv.append(dataPara);
 }
 
-async function getAPIKey() {
-  const result = await axios.get('/generate-api-key');
-  const $page = $(result.data)
-  const key = $page.find('strong').text();
-  return key;
-}
-
 function addLoadingScreen() {
   const $parentDiv = $('#response-div');
   $parentDiv.empty();
@@ -120,23 +122,76 @@ function addLoadingScreen() {
   $parentDiv.append($loadingDiv);
 }
 
+/*
+* Handle sending example requests
+* and displaying the responses
+*/
+
+async function getAPIKey() {
+  const result = await axios.get('/generate-api-key');
+  const $page = $(result.data)
+  const key = $page.find('strong').text();
+  return key;
+}
+
+function addParamValues(input, params) {
+    const name = $(input).attr('name');
+    const value = $(input).val();
+    params.push({name, value})
+}
+
+function fillQueryParams($text, $checked, $number) {
+  const params = []
+
+  for (let input of $text) {
+    if ($(input).val() !== '') {
+      addParamValues(input, params)
+    }
+  }
+  for (let input of $checked) {
+    addParamValues(input, params)
+  }
+  for (let input of $number) {
+    if ($(input).val() !== '') {
+      addParamValues(input, params)
+    }
+  }
+
+  return params;
+}
+
+function getQueryParams($route) {
+  const $text = $('#example-request-form :input[type=text]');
+  const $checked = $('#example-request-form :input:checked');
+  const $number = $('#example-request-form :input[type=number]');
+  const params = fillQueryParams($text, $checked, $number)
+  return params
+}
+
+function getData() {
+  const key = await getAPIKey();
+  const $route = $('#example-request-form option:selected').val();
+  const params = getQueryParams();
+  const data = { key };
+
+  for (let param of params) {
+    data[param.name] = param.value;
+  }
+  return data;
+}
+
+/*
+* When the user submits the example request
+* form, send the request and display the example
+* response/error to the user
+*/
+
 $('#example-request-form').on('submit', async function (e) {
   e.preventDefault();
 
   addLoadingScreen();
 
-  const $route = $('#example-request-form option:selected').val();
-  const $textInputs = $('#example-request-form :input[type=text]');
-  const $checkedInputs = $('#example-request-form :input:checked');
-  const $numberInputs = $('#example-request-form :input[type=number]');
-  const key = await getAPIKey();
-  data = { key };
-
-  const vals = getFilledValues($textInputs, $checkedInputs, $numberInputs);
-
-  for (let obj of vals) {
-    data[obj.name] = obj.value;
-  }
+  const data = getData();
 
   try {
     const res = await axios.get(`/api/${$route}`, { params: data })
