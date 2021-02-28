@@ -10,4 +10,5 @@ A RESTful API that accepts and responds with JSON &nbsp; &nbsp; &nbsp; &nbsp; [!
  - Device Specifications
  - Device Image (Link)
 
-## Going live by the end of February 2021!
+## There has been a slight delay in this app
+## Going live by the end of March 2021!
