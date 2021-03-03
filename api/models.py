@@ -195,6 +195,7 @@ class Device(db.Model):
         'manufacturers.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Float)
+    # Need to make sure this works
     release_date = db.Column(db.Date)
     image = db.Column(db.Text)
     url = db.Column(db.Text, nullable=False)
@@ -242,7 +243,6 @@ class Device(db.Model):
         Gets the user rating for a device off the given
         page if available
         '''
-        # recently added
         raw_rating = None
         try:
             raw_rating = page.find('a', class_='widgetRating__phonearena').find(
@@ -318,6 +318,8 @@ class Device(db.Model):
         db.session.commit()
 
     # Needs fixing
+
+    # This will work if we can use dates instead of strings for device release date
     @classmethod
     def get_latest(cls, manufacturer: str = None, name: str = None, limit: int = 100, is_released: bool = False):
         '''

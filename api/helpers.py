@@ -1,6 +1,5 @@
 from datetime import datetime
 from sqlalchemy import func
-# Should need to be inside app context to abort
 from flask import abort, make_response, jsonify
 from api.config import DATE_FORMATS, INVALID_DATE_MAP
 
