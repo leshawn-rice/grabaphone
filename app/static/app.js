@@ -34,14 +34,14 @@ function toggleRouteOptions(dataToShow, dataToHide, dataToUncheck, dataToReset) 
 }
 
 function toggleDeviceRoute() {
-  const dataToShow = [$('#manuf-name-group'), $('#limit-group'), $('#device-name-group')];
+  const dataToShow = [$('#manuf-name-group'), $('#offset-group'), $('#limit-group'), $('#device-name-group')];
   const dataToHide = [$('#is-released-group')];
   const dataToUncheck = $('#is-released');
   toggleRouteOptions(dataToShow, dataToHide, dataToUncheck);
 }
 
 function toggleManufacturerRoute() {
-  const dataToShow = [$('#manuf-name-group'), $('#limit-group')];
+  const dataToShow = [$('#manuf-name-group'), $('#offset-group'), $('#limit-group')];
   const dataToHide = [$('#device-name-group'), $('#is-released-group')];
   const dataToUncheck = $('#is-released');
   const dataToReset = $('#device-name');
@@ -49,7 +49,9 @@ function toggleManufacturerRoute() {
 }
 
 function toggleLatestDeviceRoute() {
-  const dataToShow = [$('#manuf-name-group'), $('#limit-group'), $('#device-name-group'), $('#is-released-group')];
+  const dataToShow = [
+    $('#manuf-name-group'), $('#offset-group'), $('#limit-group'), $('#device-name-group'), $('#is-released-group')
+  ];
   toggleRouteOptions(dataToShow);
 }
 
@@ -135,9 +137,9 @@ async function getAPIKey() {
 }
 
 function addParamValues(input, params) {
-    const name = $(input).attr('name');
-    const value = $(input).val();
-    params.push({name, value})
+  const name = $(input).attr('name');
+  const value = $(input).val();
+  params.push({ name, value })
 }
 
 function fillQueryParams($text, $checked, $number) {
@@ -160,7 +162,7 @@ function fillQueryParams($text, $checked, $number) {
   return params;
 }
 
-function getQueryParams($route) {
+function getQueryParams() {
   const $text = $('#example-request-form :input[type=text]');
   const $checked = $('#example-request-form :input:checked');
   const $number = $('#example-request-form :input[type=number]');
@@ -168,9 +170,8 @@ function getQueryParams($route) {
   return params
 }
 
-function getData() {
+async function getData() {
   const key = await getAPIKey();
-  const $route = $('#example-request-form option:selected').val();
   const params = getQueryParams();
   const data = { key };
 
@@ -188,10 +189,11 @@ function getData() {
 
 $('#example-request-form').on('submit', async function (e) {
   e.preventDefault();
+  const $route = $('#example-request-form option:selected').val();
 
   addLoadingScreen();
 
-  const data = getData();
+  const data = await getData();
 
   try {
     const res = await axios.get(`/api/${$route}`, { params: data })

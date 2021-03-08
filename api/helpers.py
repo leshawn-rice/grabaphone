@@ -3,12 +3,21 @@ from sqlalchemy import func
 from flask import abort, make_response, jsonify
 from api.config import DATE_FORMATS, INVALID_DATE_MAP
 
+# RENAME check_convertable to something that includes offset
+
 
 def convert_limit(limit):
-    if check_limit(limit):
+    if check_convertable(limit):
         return int(limit) if int(limit) <= 100 else 100
     else:
         return 100
+
+
+def convert_offset(offset):
+    if check_convertable(offset):
+        return int(offset) if int(offset) >= 0 else 0
+    else:
+        return 0
 
 
 def convert_is_released(is_released):
@@ -31,8 +40,11 @@ def handle_json(json_data):
         if json_data[key] == 'not-sent':
             if key == 'limit':
                 json_data[key] = 100
+            if key == 'offset':
+                json_data[key] = 0
             else:
                 json_data[key] = None
+    return json_data
 
 
 def validate_json(data, valid_params):
@@ -43,8 +55,12 @@ def validate_json(data, valid_params):
         param_validator = JSON_PARAM_FUNCS[param](param_value)
         if param_value:
             param_validator = JSON_PARAM_FUNCS[param](param_value)
-            if param_validator:
-                json_data[param] = param_value if param != 'limit' and param != 'is_released' else param_validator
+            # the str condition is a super janky way to check for the val 0 and not include False vals
+            if param_validator or str(param_validator == '0'):
+                if param == 'limit' or param == 'is_released' or param == 'offset':
+                    json_data[param] = param_validator
+                else:
+                    json_data[param] = param_value
             else:
                 json_data[param] = None
         else:
@@ -67,16 +83,16 @@ def check_manuf_name(name: str = None):
     return False
 
 
-def check_limit(limit: str = None):
+def check_convertable(num: str = None):
     '''
-    Takes a string value for limit,
+    Takes a string value for offset/limit,
     checks if it can be converted to an integer,
     and returns True/False based on that
     '''
-    if type(limit) is not str and type(limit) is not int:
+    if type(num) is not str and type(num) is not int:
         return False
     try:
-        limit = int(limit)
+        num = int(num)
         return True
     except ValueError:
         return False
@@ -144,5 +160,6 @@ JSON_PARAM_FUNCS = {
     'manufacturer': check_manuf_name,
     'name': check_device_name,
     'limit': convert_limit,
+    'offset': convert_offset,
     'is_released': convert_is_released
 }

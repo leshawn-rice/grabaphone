@@ -127,7 +127,7 @@ class Manufacturer(db.Model):
         return devices
 
     @classmethod
-    def get(cls, manufacturer: str = None, limit: int = 100):
+    def get(cls, manufacturer: str = None, offset: int = 0, limit: int = 100):
         '''
         Gets the manufacturers with the given name and/or all up
         to the limit (defaults to 100) and returns them
@@ -135,9 +135,9 @@ class Manufacturer(db.Model):
         manufs = None
         if manufacturer:
             manufs = cls.query.filter(cls.name.ilike(
-                manufacturer)).limit(limit).all()
+                manufacturer)).offset(offset).limit(limit).all()
         else:
-            manufs = cls.query.limit(limit).all()
+            manufs = cls.query.offset(offset).limit(limit).all()
         return manufs
 
     @classmethod

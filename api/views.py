@@ -93,15 +93,18 @@ def generate_api_key():
 def get_manufacturers():
     '''Get manufacturers'''
     # Add offset
-    json_data = validate_json(request.args, ['manufacturer', 'limit'])
+    json_data = validate_json(
+        request.args, ['manufacturer', 'offset', 'limit'])
     json_data = handle_json(json_data)
 
     manufacturer = json_data['manufacturer']
+    offset = json_data['offset']
     limit = json_data['limit']
 
-    manufacturers = Manufacturer.get(manufacturer=manufacturer, limit=limit)
+    manufacturers = Manufacturer.get(
+        manufacturer=manufacturer, offset=offset, limit=limit)
     serialized_manufacturers = [manuf.serialize() for manuf in manufacturers]
-    response = jsonify({'Manufacturers:' manufacturers})
+    response = jsonify({'Manufacturers': serialized_manufacturers})
     return (response, 200)
 
 #####################################################################
