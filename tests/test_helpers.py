@@ -2,7 +2,7 @@ from unittest import TestCase
 from app.app import app
 from app.database import db
 from api.models import Manufacturer
-from api.helpers import check_manuf_name, check_limit, convert_manuf_id, convert_to_date, make_date_valid
+from api.helpers import check_manuf_name, check_convertable, convert_manuf_id, convert_to_date, make_date_valid
 
 app.config['TESTING'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test-db'
@@ -70,38 +70,38 @@ class CheckManufNameTestCase(TestCase):
 
 
 class CheckLimitTestCase(TestCase):
-    '''check_limit Test Case'''
+    '''check_convertable Test Case'''
 
     def test_valid_limit(self):
         '''Returns True: valid limit'''
-        is_valid = check_limit('17')
+        is_valid = check_convertable('17')
         self.assertTrue(is_valid)
 
     def test_valid_type_int(self):
         '''Returns True: valid limit of type int'''
-        is_valid = check_limit(21)
+        is_valid = check_convertable(21)
         self.assertTrue(is_valid)
 
     def test_invalid_limit(self):
         '''Returns False: invalid limit'''
-        is_valid = check_limit('NaN')
+        is_valid = check_convertable('NaN')
         self.assertFalse(is_valid)
 
     def test_invalid_type_bool(self):
         '''Returns False: boolean'''
-        is_valid = check_limit(True)
+        is_valid = check_convertable(True)
         self.assertFalse(is_valid)
-        is_valid = check_limit(False)
+        is_valid = check_convertable(False)
         self.assertFalse(is_valid)
 
     def test_invalid_type_none(self):
         '''Returns False: nonetype'''
-        is_valid = check_limit(None)
+        is_valid = check_convertable(None)
         self.assertFalse(is_valid)
 
     def test_invalid_type_no_args(self):
         '''Returns False: no args'''
-        is_valid = check_limit()
+        is_valid = check_convertable()
         self.assertFalse(is_valid)
 
 
