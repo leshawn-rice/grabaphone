@@ -120,16 +120,17 @@ def get_latest_devices():
     Get latest devices
     '''
     json_data = validate_json(request.args, ['manufacturer',
-                                             'name', 'limit', 'is_released'])
+                                             'name', 'offset', 'limit', 'is_released'])
     json_data = handle_json(json_data)
 
     manufacturer = json_data['manufacturer']
     name = json_data['name']
+    offset = json_data['offset']
     limit = json_data['limit']
     is_released = json_data['is_released']
 
     devices = Device.get_latest(
-        manufacturer=manufacturer, name=name, limit=limit, is_released=is_released)
+        manufacturer=manufacturer, name=name, offset=offset, limit=limit, is_released=is_released)
     serialized_devices = [device.serialize() for device in devices]
     response = jsonify({'Devices': serialized_devices})
     return (response, 200)

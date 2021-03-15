@@ -321,7 +321,7 @@ class Device(db.Model):
 
     # This will work if we can use dates instead of strings for device release date
     @classmethod
-    def get_latest(cls, manufacturer: str = None, name: str = None, limit: int = 100, is_released: bool = False):
+    def get_latest(cls, manufacturer: str = None, name: str = None, offset: int = 0, limit: int = 100, is_released: bool = False):
         '''
         Gets 100 latest devices with the given manufacturer, that match the given name,
         serializes and then returns them
@@ -331,16 +331,16 @@ class Device(db.Model):
 
         if manufacturer and name:
             devices = cls.query.join(Device.manufacturer, aliased=True).filter(Manufacturer.name.ilike(
-                manufacturer)).filter(Device.name.ilike(fr'%{name}%')).order_by(Device.release_date.desc()).limit(limit).all()
+                manufacturer)).filter(Device.name.ilike(fr'%{name}%')).order_by(Device.release_date.desc()).offset(offset).limit(limit).all()
         elif name:
             devices = cls.query.filter(Device.name.ilike(
-                fr'%{name}%')).order_by(Device.release_date.desc()).limit(limit).all()
+                fr'%{name}%')).order_by(Device.release_date.desc()).offset(offset).limit(limit).all()
         elif manufacturer:
             devices = cls.query.join(Device.manufacturer, aliased=True).filter(
-                Manufacturer.name.ilike(manufacturer)).order_by(Device.release_date.desc()).limit(limit).all()
+                Manufacturer.name.ilike(manufacturer)).order_by(Device.release_date.desc()).offset(offset).limit(limit).all()
         else:
             devices = cls.query.order_by(Device.release_date.desc()).order_by(
-                Device.release_date.desc()).limit(limit).all()
+                Device.release_date.desc()).offset(offset).limit(limit).all()
 
         return devices
 
