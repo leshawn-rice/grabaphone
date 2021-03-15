@@ -142,14 +142,17 @@ def get_devices():
     '''
     Get devices
     '''
-    json_data = validate_json(request.args, ['manufacturer', 'name', 'limit'])
+    json_data = validate_json(
+        request.args, ['manufacturer', 'name', 'offset', 'limit'])
     json_data = handle_json(json_data)
 
     manufacturer = json_data['manufacturer']
     name = json_data['name']
+    offset = json_data['offset']
     limit = json_data['limit']
 
-    devices = Device.get(manufacturer=manufacturer, name=name, limit=limit)
+    devices = Device.get(manufacturer=manufacturer,
+                         name=name, offset=offset, limit=limit)
     serialized_devices = [device.serialize() for device in devices]
     response = jsonify({'Devices': serialized_devices})
     return (response, 200)

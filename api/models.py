@@ -345,7 +345,7 @@ class Device(db.Model):
         return devices
 
     @classmethod
-    def get(cls, manufacturer: str = None, name: str = None, limit: int = 100):
+    def get(cls, manufacturer: str = None, name: str = None, offset: int = 0, limit: int = 100):
         '''
         Gets {limit} devices with the given manufacturer, that match the given name,
         serializes and then returns them
@@ -354,15 +354,15 @@ class Device(db.Model):
 
         if manufacturer and name:
             devices = cls.query.join(Device.manufacturer, aliased=True).filter(Manufacturer.name.ilike(
-                manufacturer)).filter(Device.name.ilike(fr'%{name}%')).limit(limit).all()
+                manufacturer)).filter(Device.name.ilike(fr'%{name}%')).offset(offset).limit(limit).all()
         elif name:
             devices = cls.query.filter(Device.name.ilike(
-                fr'%{name}%')).limit(limit).all()
+                fr'%{name}%')).offset(offset).limit(limit).all()
         elif manufacturer:
             devices = cls.query.join(Device.manufacturer, aliased=True).filter(
-                Manufacturer.name.ilike(manufacturer)).limit(limit).all()
+                Manufacturer.name.ilike(manufacturer)).offset(offset).limit(limit).all()
         else:
-            devices = cls.query.limit(limit).all()
+            devices = cls.query.offset(offset).limit(limit).all()
         return devices
 
     @ classmethod
