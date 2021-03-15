@@ -3,8 +3,6 @@ from sqlalchemy import func
 from flask import abort, make_response, jsonify
 from api.config import DATE_FORMATS, INVALID_DATE_MAP
 
-# RENAME check_convertable to something that includes offset
-
 
 def convert_limit(limit):
     if check_convertable(limit):
@@ -20,6 +18,21 @@ def convert_offset(offset):
         return 0
 
 
+def convert_manuf_id(id: str = None):
+    '''
+    Converts id into either an int or None
+    and returns it
+    '''
+    # If invalid type, return None
+    if type(id) is not str and type(id) is not int:
+        return None
+    try:
+        id = int(id)
+    except ValueError:
+        id = None
+    return id
+
+
 def convert_is_released(is_released):
     return bool(is_released)
 
@@ -28,6 +41,35 @@ def check_device_name(device):
     if device and type(device) == str:
         return True
     else:
+        return False
+
+
+def check_manuf_name(name: str = None):
+    '''
+    Checks if the given name matches the name
+    of any manufacturers in the DB
+    '''
+    from api.models import Manufacturer
+    if not type(name) == str:
+        return False
+    is_manufs = Manufacturer.query.filter(Manufacturer.name.ilike(name)).all()
+    if is_manufs:
+        return True
+    return False
+
+
+def check_convertable(num: str = None):
+    '''
+    Takes a string value for offset/limit,
+    checks if it can be converted to an integer,
+    and returns True/False based on that
+    '''
+    if type(num) is not str and type(num) is not int:
+        return False
+    try:
+        num = int(num)
+        return True
+    except ValueError:
         return False
 
 
@@ -67,50 +109,6 @@ def validate_json(data, valid_params):
             json_data[param] = 'not-sent'
 
     return json_data
-
-
-def check_manuf_name(name: str = None):
-    '''
-    Checks if the given name matches the name
-    of any manufacturers in the DB
-    '''
-    from api.models import Manufacturer
-    if not type(name) == str:
-        return False
-    is_manufs = Manufacturer.query.filter(Manufacturer.name.ilike(name)).all()
-    if is_manufs:
-        return True
-    return False
-
-
-def check_convertable(num: str = None):
-    '''
-    Takes a string value for offset/limit,
-    checks if it can be converted to an integer,
-    and returns True/False based on that
-    '''
-    if type(num) is not str and type(num) is not int:
-        return False
-    try:
-        num = int(num)
-        return True
-    except ValueError:
-        return False
-
-
-def convert_manuf_id(id: str = None):
-    '''
-    Converts id into either an int or None
-    and returns it
-    '''
-    # If invalid type, return None
-    if type(id) is not str and type(id) is not int:
-        return None
-    try:
-        id = int(id)
-    except ValueError:
-        id = None
-    return id
 
 
 def convert_to_date(date_str: str = None):

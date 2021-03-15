@@ -20,6 +20,21 @@ def seed_db():
         db.session.commit()
 
 
+'''Functions
+convert_limit: x
+convert_offset: x
+convert_manuf_id: y
+convert_is_released: x
+check_device_name: x
+check_manuf_name: y
+check_convertable: y
+handle_json: x
+validate_json: x
+convert_to_date: y
+make_date_valid: y
+'''
+
+
 class CheckManufNameTestCase(TestCase):
     '''check_manuf_name Test Case'''
 
