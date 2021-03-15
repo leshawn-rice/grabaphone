@@ -96,7 +96,7 @@ class Manufacturer(db.Model):
             'id': self.id,
             'name': self.name,
             'url': self.url,
-            'image_url', self.image_url
+            'image_url': self.image_url
         }
 
     def scrape_devices(self):
