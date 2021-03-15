@@ -9,11 +9,9 @@ from functools import wraps
 
 
 # TODO
-# 1. Add offset to routes
-# 2. Ensure release_date of type Date works
-# 3. Finish tests
-# 4. Document thoroughly
-# 5. Deploy
+# 1. Finish tests
+# 2. Document thoroughly
+# 3. Deploy
 
 #######################
 #  Custom Decorators  #
