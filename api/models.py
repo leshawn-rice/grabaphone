@@ -231,7 +231,7 @@ class Device(db.Model):
             'manufacturer': self.manufacturer.name,
             'name': self.name,
             'rating': self.rating,
-            'release_date': str(self.release_date).replace('00:00:00 GMT', '').strip(),
+            'release_date': str(self.release_date).replace('00:00:00 GMT', '').strip() if self.release_date else self.release_date,
             'image_url': self.image,
             'device_url': self.url,
 
