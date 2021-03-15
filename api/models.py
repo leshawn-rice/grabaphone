@@ -78,6 +78,7 @@ class Manufacturer(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.Text, nullable=False)
+    image_url = db.Column(db.Text)
     url = db.Column(db.Text, nullable=False)
 
     devices = db.relationship('Device')
@@ -95,6 +96,7 @@ class Manufacturer(db.Model):
             'id': self.id,
             'name': self.name,
             'url': self.url,
+            'image_url', self.image_url
         }
 
     def scrape_devices(self):
@@ -141,9 +143,9 @@ class Manufacturer(db.Model):
         return manufs
 
     @classmethod
-    def create(cls, name: str, url: str) -> 'Manufacturer':
+    def create(cls, name: str, url: str, image_url: str) -> 'Manufacturer':
         '''Create a new manufacturer'''
-        new_manuf = cls(name=name, url=url)
+        new_manuf = cls(name=name, url=url, image_url=image_url)
         db.session.add(new_manuf)
         db.session.commit()
         return new_manuf
@@ -161,7 +163,8 @@ class Manufacturer(db.Model):
         divs = page.find_all('div', class_='manufacturer-item')
 
         for manuf in divs:
-            info.append({'name': manuf.span.text, 'url': manuf.a['href']})
+            info.append({'name': manuf.span.text,
+                         'url': manuf.a['href'], 'image_url': manuf.img['src']})
         return info
 
     @classmethod
@@ -174,7 +177,8 @@ class Manufacturer(db.Model):
         for manuf in manuf_info:
             name = manuf['name']
             url = manuf['url']
-            cls.create(name=name, url=url)
+            image_url = manuf['image_url']
+            cls.create(name=name, url=url, image_url=image_url)
 
 #####################################################################
 
