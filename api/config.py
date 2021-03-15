@@ -1,6 +1,6 @@
 import os
 
-MASTER_KEY = os.environ.get('MASTER_KEY')
+MASTER_KEY = os.environ.get('MASTER_KEY', 'masterkey')
 # Jan 21, 200 | January 21, 2000 | January, 2000 | January 2000 | 2000
 DATE_FORMATS = ['%b %d, %Y', '%B %d, %Y', '%B, %Y', '%B %Y', '%Y']
 

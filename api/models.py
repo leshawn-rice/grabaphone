@@ -1,7 +1,7 @@
 import requests
 import os
 from bs4 import BeautifulSoup as bsoup
-from sqlalchemy import func
+from sqlalchemy import func, nullslast
 from typing import List
 from app.database import db
 from api.helpers import convert_to_date, make_date_valid
@@ -231,7 +231,7 @@ class Device(db.Model):
             'manufacturer': self.manufacturer.name,
             'name': self.name,
             'rating': self.rating,
-            'release_date': self.release_date,
+            'release_date': str(self.release_date).replace('00:00:00 GMT', '').strip(),
             'image_url': self.image,
             'device_url': self.url,
 
@@ -311,7 +311,7 @@ class Device(db.Model):
                         self.release_date = valid_date
                 elif 'Display' in category and 'Size:' in name:
                     # Remove " inches" from display size
-                    description = description[:len(description - 7)]
+                    description = description[:len(description) - 7]
                 else:
                     new_spec = Spec.create(
                         device_id=self.id, category=category, name=name, description=description)
@@ -331,15 +331,15 @@ class Device(db.Model):
 
         if manufacturer and name:
             devices = cls.query.join(Device.manufacturer, aliased=True).filter(Manufacturer.name.ilike(
-                manufacturer)).filter(Device.name.ilike(fr'%{name}%')).order_by(Device.release_date.desc()).offset(offset).limit(limit).all()
+                manufacturer)).filter(Device.name.ilike(fr'%{name}%')).order_by(nullslast(Device.release_date.desc())).offset(offset).limit(limit).all()
         elif name:
             devices = cls.query.filter(Device.name.ilike(
-                fr'%{name}%')).order_by(Device.release_date.desc()).offset(offset).limit(limit).all()
+                fr'%{name}%')).order_by(nullslast(Device.release_date.desc())).offset(offset).limit(limit).all()
         elif manufacturer:
             devices = cls.query.join(Device.manufacturer, aliased=True).filter(
-                Manufacturer.name.ilike(manufacturer)).order_by(Device.release_date.desc()).offset(offset).limit(limit).all()
+                Manufacturer.name.ilike(manufacturer)).order_by(nullslast(Device.release_date.desc())).offset(offset).limit(limit).all()
         else:
-            devices = cls.query.order_by(Device.release_date.desc()).order_by(
+            devices = cls.query.order_by(nullslast(Device.release_date.desc())).order_by(
                 Device.release_date.desc()).offset(offset).limit(limit).all()
 
         return devices

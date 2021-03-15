@@ -4,7 +4,7 @@ from app.app import app
 from app.database import db
 
 app.config['TESTING'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test-db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test'
 app.config['SQLALCHEMY_ECHO'] = False
 
 

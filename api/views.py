@@ -229,6 +229,8 @@ def add_specs(id):
         response.headers.add('Access-Control-Allow-Origin', '*')
         return (response, 400)
 
+    device.scrape_specs()
+
     response = jsonify({'Device': device.serialize()})
     response.headers.add('Access-Control-Allow-Origin', '*')
 

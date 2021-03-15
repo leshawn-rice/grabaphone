@@ -5,7 +5,7 @@ from api.models import Manufacturer
 from api.helpers import check_manuf_name, check_convertable, convert_manuf_id, convert_to_date, make_date_valid
 
 app.config['TESTING'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test-db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test'
 
 
 def seed_db():
