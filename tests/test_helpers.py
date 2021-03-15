@@ -69,7 +69,7 @@ class CheckManufNameTestCase(TestCase):
         db.session.rollback()
 
 
-class CheckLimitTestCase(TestCase):
+class CheckConvertableTestCase(TestCase):
     '''check_convertable Test Case'''
 
     def test_valid_limit(self):
