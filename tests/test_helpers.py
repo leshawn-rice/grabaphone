@@ -2,7 +2,7 @@ from unittest import TestCase
 from app.app import app
 from app.database import db
 from api.models import Manufacturer
-from api.helpers import check_manuf_name, check_convertable, convert_manuf_id, convert_to_date, make_date_valid
+from api.helpers import check_manuf_name, check_convertable, convert_id, convert_to_date, make_date_valid
 
 app.config['TESTING'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test'
@@ -23,7 +23,7 @@ def seed_db():
 '''Functions
 convert_limit: x
 convert_offset: x
-convert_manuf_id: y
+convert_id: y
 convert_is_released: x
 check_device_name: x
 check_manuf_name: y
@@ -120,39 +120,39 @@ class CheckConvertableTestCase(TestCase):
         self.assertFalse(is_valid)
 
 
-class ConvertManufIdTestCase(TestCase):
-    '''convert_manuf_id Test Case'''
+class ConvertIdTestCase(TestCase):
+    '''convert_id Test Case'''
 
     def test_valid_id(self):
         '''Returns True: valid limit'''
-        converted_id = convert_manuf_id('1')
+        converted_id = convert_id('1')
         self.assertEqual(converted_id, 1)
 
     def test_valid_type_int(self):
         '''Returns True: valid limit of type int'''
-        converted_id = convert_manuf_id(2)
+        converted_id = convert_id(2)
         self.assertEqual(converted_id, 2)
 
     def test_invalid_limit(self):
         '''Returns False: invalid limit'''
-        converted_id = convert_manuf_id('NaN')
+        converted_id = convert_id('NaN')
         self.assertIsNone(converted_id)
 
     def test_invalid_type_bool(self):
         '''Returns False: boolean'''
-        converted_id = convert_manuf_id(True)
+        converted_id = convert_id(True)
         self.assertIsNone(converted_id)
-        converted_id = convert_manuf_id(False)
+        converted_id = convert_id(False)
         self.assertIsNone(converted_id)
 
     def test_invalid_type_none(self):
         '''Returns False: nonetype'''
-        converted_id = convert_manuf_id(None)
+        converted_id = convert_id(None)
         self.assertIsNone(converted_id)
 
     def test_invalid_type_no_args(self):
         '''Returns False: no args'''
-        converted_id = convert_manuf_id()
+        converted_id = convert_id()
         self.assertIsNone(converted_id)
 
 
