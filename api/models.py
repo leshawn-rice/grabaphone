@@ -137,7 +137,7 @@ class Manufacturer(db.Model):
         manufs = None
         if manufacturer:
             manufs = cls.query.filter(cls.name.ilike(
-                manufacturer)).offset(offset).limit(limit).all()
+                fr'%{manufacturer}%')).offset(offset).limit(limit).all()
         else:
             manufs = cls.query.offset(offset).limit(limit).all()
         return manufs
@@ -321,9 +321,6 @@ class Device(db.Model):
                         device_id=self.id, category=category, name=name, description=description)
         db.session.commit()
 
-    # Needs fixing
-
-    # This will work if we can use dates instead of strings for device release date
     @classmethod
     def get_latest(cls, manufacturer: str = None, name: str = None, offset: int = 0, limit: int = 100, is_released: bool = False):
         '''

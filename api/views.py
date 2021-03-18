@@ -4,7 +4,7 @@ from app.database import db
 from api.config import MASTER_KEY
 # Consider using db.model.ModelName instead of importing models
 from api.models import APIKey, Manufacturer, Device, Spec
-from api.helpers import convert_manuf_id, validate_json, handle_json
+from api.helpers import convert_id, validate_json, handle_json
 from functools import wraps
 
 
@@ -250,7 +250,7 @@ def add_device():
         response.headers.add('Access-Control-Allow-Origin', '*')
         return (response, 400)
 
-    manuf_id = convert_manuf_id(manuf_id)
+    manuf_id = convert_id(manuf_id)
     manuf = Manufacturer.query.get(manuf_id)
 
     if manuf:
