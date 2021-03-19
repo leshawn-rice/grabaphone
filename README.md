@@ -57,7 +57,7 @@ Specs:
 
 1. Go to [The API](https://grabaphone.herokuapp.com) and get an API Key for free (on heroku, will take a moment to spin up)
 2. Send a request to your desired route with any necessary filtering
-    - For example send the following payload:
+    - For example send the following payload, replacing key with your API key:
     
         ```{'key': '1234APIKey', 'name': 'iPhone', 'limit': 50, 'is_released': true}```
     
