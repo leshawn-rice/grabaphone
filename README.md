@@ -61,7 +61,7 @@ Specs:
     
         ```{'key': '1234APIKey', 'name': 'iPhone', 'limit': 50, 'is_released': true}```
     
-    - To https://grabaphone.herokuapp.com/api/get-latest, and you will receive the 50 latest released devices with 'iPhone' in their name
+    - To https://grabaphone.herokuapp.com/api/get-latest-devices, and you will receive the 50 latest released devices with 'iPhone' in their name
 
 ## Demo
 
