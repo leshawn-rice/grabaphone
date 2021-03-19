@@ -3,6 +3,7 @@ from app.app import app
 from app.database import db
 from api.models import Manufacturer
 from api.helpers import check_manuf_name, check_convertable, convert_id, convert_to_date, make_date_valid
+from api.helpers import convert_num
 
 app.config['TESTING'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test'
@@ -33,6 +34,49 @@ validate_json: x
 convert_to_date: y
 make_date_valid: y
 '''
+
+
+class ConvertNumTestCase(TestCase):
+    '''convert_num Test Case'''
+    def test_valid_no_constraints():
+        '''Returns 7: just passing arg num='7' '''
+        converted = convert_num(num='7')
+        self.assertEqual(converted, 7)
+
+    def test_valid_min():
+        '''Returns 12: passing args minimum=5 & num='12' '''
+        converted = convert_num(minimum=5, num='12')
+        self.assertEqual(converted, 12)
+
+    def test_valid_min_max():
+        '''Returns 8: passing args minimum=5, maximum=10, & num='8' '''
+        converted = convert_num(minimum=5, maximum=10, num='8')
+        self.assertEqual(converted, 8)
+
+    def test_valid_min_max_default():
+        '''Returns 43: passing args minimum=0, maximum=100, default=0, & num='43' '''
+        converted = convert_num(minimum=0, maximum=100, default=0, num='43')
+        self.assertEqual(converted, 43)
+
+    def test_under_min():
+        converted = convert_num(minimum=10, num='4')
+        self.assertEqual(converted, 10)
+
+    def test_over_max():
+        converted = convert_num(maximum=10, num='15')
+        self.assertEqual(converted, 10)
+
+    def test_invalid_no_default():
+        converted = convert_num(num=False)
+        self.assertIsNone(converted)
+
+    def test_invalid_with_default():
+        converted = convert_num(num=False, default=10)
+        self.assertEqual(converted, 10)
+
+    def test_invalid_no_args():
+        converted = convert_num()
+        self.assertIsNone(converted)
 
 
 class CheckManufNameTestCase(TestCase):
@@ -87,7 +131,7 @@ class CheckManufNameTestCase(TestCase):
 class CheckConvertableTestCase(TestCase):
     '''check_convertable Test Case'''
 
-    def test_valid_limit(self):
+    def test_valid_type_str(self):
         '''Returns True: valid limit'''
         is_valid = check_convertable('17')
         self.assertTrue(is_valid)
@@ -97,7 +141,7 @@ class CheckConvertableTestCase(TestCase):
         is_valid = check_convertable(21)
         self.assertTrue(is_valid)
 
-    def test_invalid_limit(self):
+    def test_invalid_type_str(self):
         '''Returns False: invalid limit'''
         is_valid = check_convertable('NaN')
         self.assertFalse(is_valid)
