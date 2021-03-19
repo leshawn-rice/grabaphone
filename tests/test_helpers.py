@@ -38,43 +38,49 @@ make_date_valid: y
 
 class ConvertNumTestCase(TestCase):
     '''convert_num Test Case'''
-    def test_valid_no_constraints():
-        '''Returns 7: just passing arg num='7' '''
+
+    def test_valid_no_constraints(self):
+        '''Returns 7: just passing args num='7' '''
         converted = convert_num(num='7')
         self.assertEqual(converted, 7)
 
-    def test_valid_min():
+    def test_valid_min(self):
         '''Returns 12: passing args minimum=5 & num='12' '''
         converted = convert_num(minimum=5, num='12')
         self.assertEqual(converted, 12)
 
-    def test_valid_min_max():
+    def test_valid_min_max(self):
         '''Returns 8: passing args minimum=5, maximum=10, & num='8' '''
         converted = convert_num(minimum=5, maximum=10, num='8')
         self.assertEqual(converted, 8)
 
-    def test_valid_min_max_default():
+    def test_valid_min_max_default(self):
         '''Returns 43: passing args minimum=0, maximum=100, default=0, & num='43' '''
         converted = convert_num(minimum=0, maximum=100, default=0, num='43')
         self.assertEqual(converted, 43)
 
-    def test_under_min():
+    def test_under_min(self):
+        '''Returns 10: passing args minimum=10 & num='4' '''
         converted = convert_num(minimum=10, num='4')
         self.assertEqual(converted, 10)
 
-    def test_over_max():
+    def test_over_max(self):
+        '''Returns 10: passing args maximum=10 & num='15' '''
         converted = convert_num(maximum=10, num='15')
         self.assertEqual(converted, 10)
 
-    def test_invalid_no_default():
+    def test_invalid_no_default(self):
+        '''Returns None: passing args num=False '''
         converted = convert_num(num=False)
         self.assertIsNone(converted)
 
-    def test_invalid_with_default():
+    def test_invalid_with_default(self):
+        '''Returns 10: passing args num=False & default=10 '''
         converted = convert_num(num=False, default=10)
         self.assertEqual(converted, 10)
 
-    def test_invalid_no_args():
+    def test_invalid_no_args(self):
+        '''Returns None: passing no args'''
         converted = convert_num()
         self.assertIsNone(converted)
 
