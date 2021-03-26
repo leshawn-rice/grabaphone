@@ -171,7 +171,13 @@ function getQueryParams() {
 }
 
 async function getData() {
-  const key = await getAPIKey();
+  let key;
+  try {
+    key = await getAPIKey();
+  }
+  catch (err) {
+    return null
+  }
   const params = getQueryParams();
   const data = { key };
 
@@ -195,11 +201,16 @@ $('#example-request-form').on('submit', async function (e) {
 
   const data = await getData();
 
-  try {
-    const res = await axios.get(`/api/${$route}`, { params: data })
-    putInResponse(res.data);
+  if (data) {
+    try {
+      const res = await axios.get(`/api/${$route}`, { params: data })
+      putInResponse(res.data);
+    }
+    catch (err) {
+      putInResponse(err.response.data);
+    }
   }
-  catch (err) {
-    putInResponse(err.response.data);
+  else {
+    putInResponse('ERROR: NULL DATA')
   }
 });
