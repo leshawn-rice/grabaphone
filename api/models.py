@@ -5,7 +5,7 @@ from sqlalchemy import func, nullslast
 from typing import List
 from datetime import date
 from app.database import db
-from api.helpers import convert_to_date, make_date_valid
+# from api.helpers import convert_to_date
 from api.config import UNRELEASED_YEAR
 
 
@@ -136,12 +136,13 @@ class Manufacturer(db.Model):
         to the limit (defaults to 100) and returns them
         '''
         manufs = None
-        print(limit)
+
         if manufacturer:
             manufs = cls.query.filter(cls.name.ilike(
                 fr'%{manufacturer}%')).offset(offset).limit(limit).all()
         else:
             manufs = cls.query.offset(offset).limit(limit).all()
+
         return manufs
 
     @classmethod
@@ -281,7 +282,9 @@ class Device(db.Model):
             img_link = img.attrs['src']
             self.image = img_link
         except AttributeError:
-            print('No Image Found!')
+            # No Image Found
+            pass
+
         return
 
     def get_release_date(self, page):

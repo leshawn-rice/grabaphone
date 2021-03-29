@@ -2,10 +2,11 @@ from flask import render_template, request, jsonify, abort, make_response
 from app.app import app
 from app.database import db
 from api.config import MASTER_KEY
-# Consider using db.model.ModelName instead of importing models
 from api.models import APIKey, Manufacturer, Device, Spec
-from api.helpers import convert_id, validate_json, handle_json
+from api.helpers import JSONValidator
 from functools import wraps
+
+jsonValidator = JSONValidator()
 
 
 # TODO
@@ -69,7 +70,7 @@ def master_key_required(f):
 @app.route('/generate-api-key', methods=['GET', 'POST'])
 def generate_api_key():
     '''
-    Creates, saves, and shows the user a unique, 
+    Creates, saves, and shows the user a unique,
     random 12-character API key.
     '''
     key = APIKey.generate_and_create()
@@ -90,17 +91,19 @@ def generate_api_key():
 @api_key_required
 def get_manufacturers():
     '''Get manufacturers'''
-    # Add offset
-    json_data = validate_json(
-        request.args, ['manufacturer', 'offset', 'limit'])
-    json_data = handle_json(json_data)
 
-    manufacturer = json_data['manufacturer']
-    offset = json_data['offset']
-    limit = json_data['limit']
+    jsonValidator.sanitize_json(
+        request.args, valid_params=['manufacturer', 'offset', 'limit'])
+
+    filters = jsonValidator.json_data
+
+    manufacturer = filters['manufacturer']
+    offset = filters['offset']
+    limit = filters['limit']
 
     manufacturers = Manufacturer.get(
         manufacturer=manufacturer, offset=offset, limit=limit)
+
     serialized_manufacturers = [manuf.serialize() for manuf in manufacturers]
     response = jsonify({'Manufacturers': serialized_manufacturers})
     return (response, 200)
@@ -117,15 +120,16 @@ def get_latest_devices():
     '''
     Get latest devices
     '''
-    json_data = validate_json(request.args, ['manufacturer',
-                                             'name', 'offset', 'limit', 'is_released'])
-    json_data = handle_json(json_data)
+    jsonValidator.sanitize_json(
+        request.args, ['manufacturer', 'name', 'offset', 'limit', 'is_released'])
 
-    manufacturer = json_data['manufacturer']
-    name = json_data['name']
-    offset = json_data['offset']
-    limit = json_data['limit']
-    is_released = json_data['is_released']
+    filters = jsonValidator.json_data
+
+    manufacturer = filters['manufacturer']
+    name = filters['name']
+    offset = filters['offset']
+    limit = filters['limit']
+    is_released = filters['is_released']
 
     devices = Device.get_latest(
         manufacturer=manufacturer, name=name, offset=offset, limit=limit, is_released=is_released)
@@ -140,14 +144,16 @@ def get_devices():
     '''
     Get devices
     '''
-    json_data = validate_json(
-        request.args, ['manufacturer', 'name', 'offset', 'limit'])
-    json_data = handle_json(json_data)
 
-    manufacturer = json_data['manufacturer']
-    name = json_data['name']
-    offset = json_data['offset']
-    limit = json_data['limit']
+    jsonValidator.sanitize_json(
+        request.args, ['manufacturer', 'name', 'offset', 'limit'])
+
+    filters = jsonValidator.json_data
+
+    manufacturer = filters['manufacturer']
+    name = filters['name']
+    offset = filters['offset']
+    limit = filters['limit']
 
     devices = Device.get(manufacturer=manufacturer,
                          name=name, offset=offset, limit=limit)

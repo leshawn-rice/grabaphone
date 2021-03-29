@@ -1,38 +1,19 @@
 from unittest import TestCase
-from app.app import app
-from app.database import db
-from api.models import Manufacturer
-from api.helpers import check_manuf_name, check_convertable, convert_id, convert_to_date, make_date_valid
-from api.helpers import convert_num
-
-app.config['TESTING'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test'
-
-
-def seed_db():
-    mock_manufs = {
-        'Apple': 'https://apple.com',
-        'Samsung': 'https://samsung.com',
-        'Google': 'https://google.com'
-    }
-    for name, url in mock_manufs.items():
-        manuf = Manufacturer(name=name, url=url)
-        db.session.add(manuf)
-        db.session.commit()
+from datetime import date
+from api.models import Manufacturer, Device
+from api.helpers import check_name, check_convertable, convert_num
+from api.helpers import convert_to_date, make_date_valid
+from api.helpers import sanitize_json, validate_json
+from tests.setup_tests import db, seed_db
 
 
 '''Functions
-convert_limit: x
-convert_offset: x
-convert_id: y
-convert_is_released: x
-check_device_name: x
 check_manuf_name: y
 check_convertable: y
-handle_json: x
-validate_json: x
 convert_to_date: y
 make_date_valid: y
+sanitize_json: x
+validate_json: x
 '''
 
 
@@ -85,8 +66,8 @@ class ConvertNumTestCase(TestCase):
         self.assertIsNone(converted)
 
 
-class CheckManufNameTestCase(TestCase):
-    '''check_manuf_name Test Case'''
+class CheckNameTestCase(TestCase):
+    '''check_name Test Case'''
 
     @classmethod
     def setUpClass(cls):
@@ -94,40 +75,82 @@ class CheckManufNameTestCase(TestCase):
         db.create_all()
         seed_db()
 
-    def test_valid_manufacturer(self):
-        '''Returns True: valid name'''
-        is_valid = check_manuf_name('Apple')
+    def test_valid_manufacturers(self):
+        '''Returns True: valid manufacturer name'''
+        is_valid = check_name('Apple', Manufacturer)
         self.assertTrue(is_valid)
-        is_valid = check_manuf_name('Samsung')
+        is_valid = check_name('Samsung', Manufacturer)
         self.assertTrue(is_valid)
-        is_valid = check_manuf_name('Google')
+        is_valid = check_name('Google', Manufacturer)
+        self.assertTrue(is_valid)
+
+    def test_valid_devices(self):
+        '''Returns True: valid device name'''
+        is_valid = check_name('iPhone', Device)
+        self.assertTrue(is_valid)
+        is_valid = check_name('Galaxy', Device)
+        self.assertTrue(is_valid)
+        is_valid = check_name('Pixel', Device)
+        self.assertTrue(is_valid)
+
+    def test_valid_mismatch_case(self):
+        '''Returns True: valid name with mismatched case'''
+        is_valid = check_name('aPpLE', Manufacturer)
+        self.assertTrue(is_valid)
+        is_valid = check_name('SAmSUng', Manufacturer)
+        self.assertTrue(is_valid)
+        is_valid = check_name('IphOnE', Device)
+        self.assertTrue(is_valid)
+        is_valid = check_name('galAXy', Device)
         self.assertTrue(is_valid)
 
     def test_invalid_manufacturer(self):
         '''Returns False: invalid name'''
-        is_valid = check_manuf_name('Invalid-Manufacturer')
+        is_valid = check_name('Invalid-Device', Manufacturer)
+        self.assertFalse(is_valid)
+
+    def test_invalid_device(self):
+        '''Returns False: invalid name'''
+        is_valid = check_name('Invalid-Device', Device)
         self.assertFalse(is_valid)
 
     def test_invalid_type_int(self):
         '''Returns False: integer'''
-        is_valid = check_manuf_name(7)
+        is_valid = check_name(7, Manufacturer)
+        self.assertFalse(is_valid)
+        is_valid = check_name(7, Device)
         self.assertFalse(is_valid)
 
     def test_invalid_type_bool(self):
         '''Returns False: boolean'''
-        is_valid = check_manuf_name(False)
+        is_valid = check_name(False, Manufacturer)
         self.assertFalse(is_valid)
-        is_valid = check_manuf_name(True)
+        is_valid = check_name(True, Manufacturer)
+        self.assertFalse(is_valid)
+        is_valid = check_name(False, Device)
+        self.assertFalse(is_valid)
+        is_valid = check_name(True, Device)
         self.assertFalse(is_valid)
 
-    def test_invalid_type_none(self):
+    def test_invalid_type_none_name(self):
         '''Returns False: nonetype'''
-        is_valid = check_manuf_name(None)
+        is_valid = check_name(None, Manufacturer)
+        self.assertFalse(is_valid)
+        is_valid = check_name(None, Device)
+        self.assertFalse(is_valid)
+
+    def test_invalid_type_none_model(self):
+        '''Returns False: nonetype args'''
+        is_valid = check_name('Apple', None)
+        self.assertFalse(is_valid)
+        is_valid = check_name('iPhone', None)
         self.assertFalse(is_valid)
 
     def test_invalid_type_no_args(self):
         '''Returns False: no args'''
-        is_valid = check_manuf_name(None)
+        is_valid = check_name()
+        self.assertFalse(is_valid)
+        is_valid = check_name()
         self.assertFalse(is_valid)
 
     def tearDown(self):
@@ -170,48 +193,11 @@ class CheckConvertableTestCase(TestCase):
         self.assertFalse(is_valid)
 
 
-class ConvertIdTestCase(TestCase):
-    '''convert_id Test Case'''
-
-    def test_valid_id(self):
-        '''Returns True: valid limit'''
-        converted_id = convert_id('1')
-        self.assertEqual(converted_id, 1)
-
-    def test_valid_type_int(self):
-        '''Returns True: valid limit of type int'''
-        converted_id = convert_id(2)
-        self.assertEqual(converted_id, 2)
-
-    def test_invalid_limit(self):
-        '''Returns False: invalid limit'''
-        converted_id = convert_id('NaN')
-        self.assertIsNone(converted_id)
-
-    def test_invalid_type_bool(self):
-        '''Returns False: boolean'''
-        converted_id = convert_id(True)
-        self.assertIsNone(converted_id)
-        converted_id = convert_id(False)
-        self.assertIsNone(converted_id)
-
-    def test_invalid_type_none(self):
-        '''Returns False: nonetype'''
-        converted_id = convert_id(None)
-        self.assertIsNone(converted_id)
-
-    def test_invalid_type_no_args(self):
-        '''Returns False: no args'''
-        converted_id = convert_id()
-        self.assertIsNone(converted_id)
-
-
 class ConvertToDateTestCase(TestCase):
     '''convert_to_date Test Case'''
 
     def test_valid_dates(self):
         '''Returns valid date: valid str'''
-        from datetime import date
         dates_to_check = ['January 8, 1984', 'Dec 9, 2000',
                           'December 2020', 'March, 2021', '2010']
         for raw_date in dates_to_check:
@@ -223,7 +209,6 @@ class ConvertToDateTestCase(TestCase):
 
     def test_invalid_str(self):
         '''Returns January 1900: invalid str'''
-        from datetime import date
         converted_date = convert_to_date('not-a-date')
         self.assertIsInstance(converted_date, date)
         # Regex matches XXXX-XX-XX i.e. 2020-08-21
@@ -231,7 +216,6 @@ class ConvertToDateTestCase(TestCase):
 
     def test_no_date(self):
         '''Returns January 1900: no param'''
-        from datetime import date
         converted_date = convert_to_date()
         self.assertIsInstance(converted_date, date)
         # Regex matches XXXX-XX-XX i.e. 2020-08-21
@@ -239,7 +223,6 @@ class ConvertToDateTestCase(TestCase):
 
     def test_invalid_type_int(self):
         '''Returns January 1900: param of type int'''
-        from datetime import date
         converted_date = convert_to_date(24)
         self.assertIsInstance(converted_date, date)
         # Regex matches XXXX-XX-XX i.e. 2020-08-21
@@ -247,7 +230,6 @@ class ConvertToDateTestCase(TestCase):
 
     def test_invalid_type_bool(self):
         '''Returns January 1900: param of type boolean'''
-        from datetime import date
         converted_date = convert_to_date(True)
         self.assertIsInstance(converted_date, date)
         # Regex matches XXXX-XX-XX i.e. 2020-08-21
@@ -307,3 +289,30 @@ class MakeDateValidTestCase(TestCase):
         '''Returns None with invalid type bool'''
 
         self.assertIsNone(make_date_valid(True))
+
+
+class SanitizeJSONTestCase(TestCase):
+    '''sanitize_json Test Case'''
+
+    @classmethod
+    def setUpClass(cls):
+        db.drop_all()
+        db.create_all()
+        seed_db()
+
+    def setUp(self):
+        self.json_data = {
+            'manufacturer': 'Apple',
+            'name': 'iPhone',
+            'offset': 0,
+            'limit': 100,
+            'is_released': 'True'
+        }
+
+    def test_valid_json(self):
+        new_data = sanitize_json(self.json_data)
+        print(new_data)
+        self.assertTrue(True)
+
+    def tearDown(self):
+        db.session.rollback()
