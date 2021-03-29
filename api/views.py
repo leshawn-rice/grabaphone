@@ -3,10 +3,10 @@ from app.app import app
 from app.database import db
 from api.config import MASTER_KEY
 from api.models import APIKey, Manufacturer, Device, Spec
-from api.helpers import JSONValidator
+from api.JSONValidator import Validator
 from functools import wraps
 
-jsonValidator = JSONValidator()
+jsonValidator = Validator()
 
 
 # TODO
@@ -92,10 +92,8 @@ def generate_api_key():
 def get_manufacturers():
     '''Get manufacturers'''
 
-    jsonValidator.sanitize_json(
-        request.args, valid_params=['manufacturer', 'offset', 'limit'])
-
-    filters = jsonValidator.json_data
+    filters = jsonValidator.sanitize_json(data=request.args, valid_params=[
+                                          'manufacturer', 'offset', 'limit'])
 
     manufacturer = filters['manufacturer']
     offset = filters['offset']
@@ -120,10 +118,8 @@ def get_latest_devices():
     '''
     Get latest devices
     '''
-    jsonValidator.sanitize_json(
-        request.args, ['manufacturer', 'name', 'offset', 'limit', 'is_released'])
-
-    filters = jsonValidator.json_data
+    filters = jsonValidator.sanitize_json(data=request.args, valid_params=[
+                                          'manufacturer', 'name', 'offset', 'limit', 'is_released'])
 
     manufacturer = filters['manufacturer']
     name = filters['name']
@@ -145,10 +141,8 @@ def get_devices():
     Get devices
     '''
 
-    jsonValidator.sanitize_json(
-        request.args, ['manufacturer', 'name', 'offset', 'limit'])
-
-    filters = jsonValidator.json_data
+    filters = jsonValidator.sanitize_json(data=request.args, valid_params=[
+                                          'manufacturer', 'name', 'offset', 'limit'])
 
     manufacturer = filters['manufacturer']
     name = filters['name']

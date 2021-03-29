@@ -5,7 +5,7 @@ from sqlalchemy import func, nullslast
 from typing import List
 from datetime import date
 from app.database import db
-# from api.helpers import convert_to_date
+from api.helpers import convert_to_date
 from api.config import UNRELEASED_YEAR
 
 
