@@ -3,8 +3,10 @@ import os
 from bs4 import BeautifulSoup as bsoup
 from sqlalchemy import func, nullslast
 from typing import List
+from datetime import date
 from app.database import db
 from api.helpers import convert_to_date, make_date_valid
+from api.config import UNRELEASED_YEAR
 
 
 ###################
@@ -113,7 +115,6 @@ class Manufacturer(db.Model):
         for i in range(5):
             response = requests.get(url)
             if response.status_code != 200:
-                print(f'Page {i} not found!')
                 break
             container = bsoup(response.text, 'html.parser').find(
                 id='finder-results')
@@ -135,6 +136,7 @@ class Manufacturer(db.Model):
         to the limit (defaults to 100) and returns them
         '''
         manufs = None
+        print(limit)
         if manufacturer:
             manufs = cls.query.filter(cls.name.ilike(
                 fr'%{manufacturer}%')).offset(offset).limit(limit).all()
@@ -230,12 +232,16 @@ class Device(db.Model):
         Returns a dictionary with the device's information,
         and a dict of their specs, for converting to JSON
         '''
+
+        year = date.today().year + UNRELEASED_YEAR
+
         return {
             'id': self.id,
             'manufacturer': self.manufacturer.name,
             'name': self.name,
             'rating': self.rating,
-            'release_date': str(self.release_date).replace('00:00:00 GMT', '').strip() if self.release_date else self.release_date,
+            'release_date':  str(self.release_date).replace(
+                '00:00:00 GMT', '').strip() if self.release_date and self.release_date != date(year, 12, 31) else None,
             'image_url': self.image,
             'device_url': self.url,
 
@@ -278,6 +284,25 @@ class Device(db.Model):
             print('No Image Found!')
         return
 
+    def get_release_date(self, page):
+        '''
+        Gets the release date of a device if available, otherwise
+        sets it to either the end of the current year, or None
+        '''
+        try:
+            div = page.find('a', class_='widgetQuickSpecs__link calendar')
+            header = div.find('h5', class_='widgetQuickSpecs__title_heading')
+            value = div.find('p', class_='widgetQuickSpecs__title_paragraph').find_all(
+                text=True, recursive=False)
+            release_date = str(value[0])
+            if release_date == 'No information':
+                # Temporary solution for devices that don't have an expected release date
+                # Make the relase date the last day of the year 5 years from now
+                release_date = f'Dec 31, {date.today().year + UNRELEASED_YEAR}'
+            self.release_date = convert_to_date(release_date)
+        except:
+            self.release_date = None
+
     def scrape_specs(self) -> List['Spec']:
         '''
         Scrapes all the specs for a device from the
@@ -293,6 +318,7 @@ class Device(db.Model):
 
         self.get_rating(page)
         self.get_image(page)
+        self.get_release_date(page)
 
         try:
             spec_groups = page.find(
@@ -309,16 +335,12 @@ class Device(db.Model):
             for spec in specs:
                 name = " ".join(str(spec.th.text).split())
                 description = " ".join(str(spec.td.text).split())
-                if 'Availability' in category:
-                    if not self.release_date or not len(self.release_date) > 4:
-                        valid_date = make_date_valid(description)
-                        self.release_date = valid_date
-                elif 'Display' in category and 'Size:' in name:
+                if 'Display' in category and 'Size:' in name:
                     # Remove " inches" from display size
                     description = description[:len(description) - 7]
-                else:
-                    new_spec = Spec.create(
-                        device_id=self.id, category=category, name=name, description=description)
+                name = name.replace(':', '')
+                new_spec = Spec.create(
+                    device_id=self.id, category=category, name=name, description=description)
         db.session.commit()
 
     @classmethod
@@ -327,44 +349,50 @@ class Device(db.Model):
         Gets 100 latest devices with the given manufacturer, that match the given name,
         serializes and then returns them
         '''
-        from datetime import date
-        devices = None
 
-        if manufacturer and name:
-            devices = cls.query.join(Device.manufacturer, aliased=True).filter(Manufacturer.name.ilike(
-                manufacturer)).filter(Device.name.ilike(fr'%{name}%')).order_by(nullslast(Device.release_date.desc())).offset(offset).limit(limit).all()
+        # Gotta find a way to get outta this IF hell
+        if manufacturer and name and is_released:
+            return cls.query.join(Device.manufacturer, aliased=True).filter(Manufacturer.name.ilike(fr'%{manufacturer}%')).filter(Device.name.ilike(fr'%{name}%')).filter(
+                func.date(Device.release_date) < date.today()).order_by(nullslast(Device.release_date.desc())).offset(offset).limit(limit).all()
+        elif manufacturer and name:
+            return cls.query.join(Device.manufacturer, aliased=True).filter(Manufacturer.name.ilike(fr'%{manufacturer}%')).filter(
+                Device.name.ilike(fr'%{name}%')).order_by(nullslast(Device.release_date.desc())).offset(offset).limit(limit).all()
+        elif name and is_released:
+            return cls.query.filter(Device.name.ilike(fr'%{name}%')).filter(func.date(Device.release_date) < date.today(
+            )).order_by(nullslast(Device.release_date.desc())).offset(offset).limit(limit).all()
         elif name:
-            devices = cls.query.filter(Device.name.ilike(
+            return cls.query.filter(Device.name.ilike(
                 fr'%{name}%')).order_by(nullslast(Device.release_date.desc())).offset(offset).limit(limit).all()
+        elif manufacturer and is_released:
+            return cls.query.join(Device.manufacturer, aliased=True).filter(Manufacturer.name.ilike(fr'%{manufacturer}%')).filter(func.date(
+                Device.release_date) < date.today()).order_by(nullslast(Device.release_date.desc())).offset(offset).limit(limit).all()
         elif manufacturer:
-            devices = cls.query.join(Device.manufacturer, aliased=True).filter(
-                Manufacturer.name.ilike(manufacturer)).order_by(nullslast(Device.release_date.desc())).offset(offset).limit(limit).all()
-        else:
-            devices = cls.query.order_by(nullslast(Device.release_date.desc())).order_by(
-                Device.release_date.desc()).offset(offset).limit(limit).all()
+            return cls.query.join(Device.manufacturer, aliased=True).filter(
+                Manufacturer.name.ilike(fr'%{manufacturer}%')).order_by(nullslast(Device.release_date.desc())).offset(offset).limit(limit).all()
+        elif is_released:
+            return cls.query.filter(func.date(Device.release_date) < date.today()).order_by(nullslast(
+                Device.release_date.desc())).order_by(Device.release_date.desc()).offset(offset).limit(limit).all()
 
-        return devices
+        return cls.query.order_by(nullslast(Device.release_date.desc())).order_by(
+            Device.release_date.desc()).offset(offset).limit(limit).all()
 
-    @classmethod
+    @ classmethod
     def get(cls, manufacturer: str = None, name: str = None, offset: int = 0, limit: int = 100):
         '''
         Gets {limit} devices with the given manufacturer, that match the given name,
         serializes and then returns them
         '''
-        devices = None
-
         if manufacturer and name:
-            devices = cls.query.join(Device.manufacturer, aliased=True).filter(Manufacturer.name.ilike(
+            return cls.query.join(Device.manufacturer, aliased=True).filter(Manufacturer.name.ilike(
                 manufacturer)).filter(Device.name.ilike(fr'%{name}%')).offset(offset).limit(limit).all()
         elif name:
-            devices = cls.query.filter(Device.name.ilike(
+            return cls.query.filter(Device.name.ilike(
                 fr'%{name}%')).offset(offset).limit(limit).all()
         elif manufacturer:
-            devices = cls.query.join(Device.manufacturer, aliased=True).filter(
+            return cls.query.join(Device.manufacturer, aliased=True).filter(
                 Manufacturer.name.ilike(manufacturer)).offset(offset).limit(limit).all()
-        else:
-            devices = cls.query.offset(offset).limit(limit).all()
-        return devices
+
+        return cls.query.offset(offset).limit(limit).all()
 
     @ classmethod
     def create(cls, name: str, manufacturer_id: int, url: str) -> 'Device':

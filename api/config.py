@@ -6,3 +6,5 @@ DATE_FORMATS = ['%b %d, %Y', '%B %d, %Y', '%B, %Y', '%B %Y', '%Y']
 
 INVALID_DATE_MAP = {
     '(Official)': '', 'Q1': 'January', 'Q2': 'April', 'Q3': 'July', 'Q4': 'October', 'Yes': 'January 1900'}
+
+UNRELEASED_YEAR = 5

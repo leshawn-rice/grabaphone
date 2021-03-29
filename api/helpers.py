@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from sqlalchemy import func
 from flask import abort, make_response, jsonify
 from api.config import DATE_FORMATS, INVALID_DATE_MAP
@@ -204,7 +204,7 @@ def handle_json(json_data: dict = None):
         if json_data[key] == 'not-sent':
             if key == 'limit':
                 json_data[key] = 100
-            if key == 'offset':
+            elif key == 'offset':
                 json_data[key] = 0
             else:
                 json_data[key] = None
