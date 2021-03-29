@@ -4,6 +4,7 @@ from api.models import Manufacturer, Device
 
 app.config['TESTING'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test'
+app.config['SQLALCHEMY_ECHO'] = False
 
 
 def seed_db():

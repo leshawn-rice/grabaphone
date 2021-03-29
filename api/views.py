@@ -95,6 +95,8 @@ def get_manufacturers():
     filters = jsonValidator.sanitize_json(data=request.args, valid_params=[
                                           'manufacturer', 'offset', 'limit'])
 
+    print(filters)
+
     manufacturer = filters['manufacturer']
     offset = filters['offset']
     limit = filters['limit']

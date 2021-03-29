@@ -207,10 +207,10 @@ class Validator:
             A dictionary with the values of the valid params in data set to valid data
             for the API
         '''
-        if type(data) != dict or type(valid_params) != list:
+        if not data or type(valid_params) != list:
             return {}
 
-        if len(data.keys()) == 0 or len(valid_params) == 0:
+        if len(list(data.keys())) == 0 or len(valid_params) == 0:
             return {}
 
         json_data = {}

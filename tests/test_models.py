@@ -1,16 +1,6 @@
 from unittest import TestCase
 from api.models import APIKey, Device, Manufacturer
-from app.app import app
-from app.database import db
-
-app.config['TESTING'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///grabaphone_test'
-app.config['SQLALCHEMY_ECHO'] = False
-
-
-def add_to_db(item):
-    db.session.add(item)
-    db.session.commit()
+from tests.setup_tests import db, seed_db
 
 
 class APIKeyTestCase(TestCase):
@@ -20,6 +10,7 @@ class APIKeyTestCase(TestCase):
     def setUpClass(cls):
         db.drop_all()
         db.create_all()
+        seed_db()
 
     def test_validate(self):
         '''Test validation of valid key'''
@@ -67,39 +58,39 @@ class DeviceTestCase(TestCase):
     def setUpClass(cls):
         db.drop_all()
         db.create_all()
+        seed_db()
 
     # Test scraping? Cant be done with test data has to be done with real data
 
-    def setUp(self):
-        self.manuf = Manufacturer(
-            name='test manuf', url='https://testmanuf.com')
-        add_to_db(self.manuf)
-
     def test_creation(self):
         '''Test that creating a new Device is as expected'''
+        manufacturer = Manufacturer.query.first()
         device = Device.create(
             name='test device', url='https://testphone.com', manufacturer_id=1)
         self.assertIsInstance(device, Device)
         self.assertEqual(device.name, 'test device')
-        self.assertEqual(device.manufacturer, self.manuf)
 
     def test_serialize(self):
         '''Test that serializing a Device runs correctly'''
-        device = Device(name='test device',
-                        url='https://testphone.com', manufacturer_id=self.manuf.id)
-        add_to_db(device)
+        device = Device.create(
+            name='test dev', url='https://test.com', manufacturer_id=1)
 
         serialized = device.serialize()
         self.assertEqual(serialized, {
-            'id': self.manuf.id,
-            'manufacturer': 'test manuf',
-            'name': 'test device',
+            'id': device.id,
+            'manufacturer': 'Apple',
+            'name': 'test dev',
             'release_date': None,
             'rating': None,
-            'device_url': 'https://testphone.com',
+            'device_url': 'https://test.com',
             'image_url': None,
             'specs': {}
         })
+
+    def test_get(self):
+        '''Test that getting a device runs correctly'''
+        device = Device.get(manufacturer='Apple',
+                            name='iPhone', offset=0, limit=1)
 
     def tearDown(self):
         db.session.rollback()
