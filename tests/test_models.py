@@ -1,6 +1,7 @@
 from unittest import TestCase
 from api.models import APIKey, Device, Manufacturer
 from tests.setup_tests import db, seed_db
+import datetime
 
 
 class APIKeyTestCase(TestCase):
@@ -8,8 +9,6 @@ class APIKeyTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        db.drop_all()
-        db.create_all()
         seed_db()
 
     def test_validate(self):
@@ -56,13 +55,9 @@ class DeviceTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        db.drop_all()
-        db.create_all()
         seed_db()
 
-    # Test scraping? Cant be done with test data has to be done with real data
-
-    def test_creation(self):
+    def test_create(self):
         '''Test that creating a new Device is as expected'''
         manufacturer = Manufacturer.query.first()
         device = Device.create(
@@ -89,8 +84,28 @@ class DeviceTestCase(TestCase):
 
     def test_get(self):
         '''Test that getting a device runs correctly'''
-        device = Device.get(manufacturer='Apple',
-                            name='iPhone', offset=0, limit=1)
+        devices = Device.get(manufacturer='Apple',
+                             name='iPhone', offset=0, limit=1)
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(devices[0].name, 'Apple iPhone 12')
+        self.assertEqual(devices[0].manufacturer.name, 'Apple')
+        self.assertEqual(devices[0].rating, None)
+
+    def test_get_latest(self):
+        devices = Device.get_latest()
+        self.assertEqual(devices[0].name, 'Galaxy S21 Ultra')
+        self.assertEqual(devices[0].manufacturer.name, 'Samsung')
+        self.assertEqual(devices[0].rating, None)
+        self.assertIsInstance(devices[0].release_date, datetime.date)
+
+    def test_scrape_specs(self):
+        device = Device.query.get(1)
+        device.scrape_specs()
+        self.assertIsInstance(device.rating, float)
+        # iPhone 12 released Oct 23, 2020
+        self.assertEqual(device.release_date, datetime.datetime.strptime(
+            'Oct 23, 2020', '%b %d, %Y').date())
+        self.assertIsInstance(device.specs, list)
 
     def tearDown(self):
         db.session.rollback()

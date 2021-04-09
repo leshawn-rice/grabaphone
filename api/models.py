@@ -202,7 +202,6 @@ class Device(db.Model):
         'manufacturers.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Float)
-    # Need to make sure this works
     release_date = db.Column(db.Date)
     image = db.Column(db.Text)
     url = db.Column(db.Text, nullable=False)

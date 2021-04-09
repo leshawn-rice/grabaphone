@@ -1,13 +1,3 @@
-# Device
- - get
- - create
- - serialize
- - get_latest
- - get_rating
- - get_image
- - get_release_date
- - scrape_specs
-
 # Manufacturer
 #### Get
     Test that the get method works properly
